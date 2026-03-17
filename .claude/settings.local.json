@@ -37,7 +37,10 @@
       "WebSearch",
       "Bash(node:*)",
       "Bash(winget:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(wsl:*)",
+      "Bash(sleep:*)",
+      "Bash(curl:*)"
     ]
   }
 }

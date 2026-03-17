@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Search, UserPlus, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import { Button, Skeleton } from '@patient-health/ui'
 import { usePatients } from '../hooks/usePatients'
 import { format } from 'date-fns'
 import type { PatientSummary } from '@patient-health/types'
+import NewPatientModal from '../components/NewPatientModal'
 
 // ─── Debounce hook ────────────────────────────────────────────────────────────
 
@@ -131,12 +133,37 @@ function EmptyState({ search }: { search: string }) {
   )
 }
 
+// ─── Success toast ────────────────────────────────────────────────────────────
+
+function SuccessToast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, 4000)
+    return () => clearTimeout(timer)
+  }, [onDismiss])
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white shadow-lg"
+    >
+      <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+      {message}
+    </div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function PatientsPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [rawSearch, setRawSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   // Debounce search input 300ms — avoids an API call on every keystroke
   const debouncedSearch = useDebounce(rawSearch, 300)
@@ -191,8 +218,7 @@ export default function PatientsPage() {
             />
           </div>
 
-          {/* New patient — Phase 2 */}
-          <Button variant="default" size="sm" disabled title="Patient registration — coming soon">
+          <Button variant="default" size="sm" onClick={() => setModalOpen(true)}>
             <UserPlus className="h-4 w-4" aria-hidden="true" />
             New Patient
           </Button>
@@ -286,6 +312,19 @@ export default function PatientsPage() {
           </div>
         </div>
       )}
+
+      {/* ── New Patient modal ───────────────────────────────────────────────── */}
+      <NewPatientModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={(patient) => {
+          queryClient.invalidateQueries({ queryKey: ['patients'] })
+          setToast(`Patient registered — ${patient.mrn}`)
+        }}
+      />
+
+      {/* ── Success toast ───────────────────────────────────────────────────── */}
+      {toast && <SuccessToast message={toast} onDismiss={() => setToast(null)} />}
     </div>
   )
 }
