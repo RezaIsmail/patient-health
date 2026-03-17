@@ -1,0 +1,42 @@
+{
+  "name": "@patient-health/auth-service",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "lint": "eslint src",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^9.3.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "@patient-health/types": "*",
+    "@prisma/client": "^5.16.0",
+    "bcryptjs": "^2.4.3",
+    "fastify": "^5.8.2",
+    "jsonwebtoken": "^9.0.0",
+    "pino": "^9.0.0",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^29.5.0",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^10.0.0",
+    "jest": "^29.0.0",
+    "prisma": "^5.16.0",
+    "ts-jest": "^29.0.0",
+    "ts-node": "^10.9.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.0"
+  }
+}

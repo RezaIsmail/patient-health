@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.capterra.com)",
+      "WebFetch(domain:www.softwareadvice.com)",
+      "WebFetch(domain:www.healthit.gov)",
+      "WebFetch(domain:www.hl7.org)",
+      "WebFetch(domain:www.epic.com)",
+      "WebFetch(domain:www.oracle.com)",
+      "WebFetch(domain:www.elationhealth.com)",
+      "WebFetch(domain:www.athenahealth.com)",
+      "WebFetch(domain:www.drchrono.com)",
+      "WebFetch(domain:www.modmed.com)",
+      "WebFetch(domain:www.eclinicalworks.com)",
+      "WebFetch(domain:www.meditech.com)",
+      "WebFetch(domain:ehr.meditech.com)",
+      "WebFetch(domain:www.cms.gov)",
+      "WebFetch(domain:www.hhs.gov)",
+      "WebFetch(domain:www.g2.com)",
+      "WebFetch(domain:klasresearch.com)",
+      "WebFetch(domain:www.healthcareitnews.com)",
+      "WebFetch(domain:www.techtarget.com)",
+      "WebFetch(domain:www.healthcareittoday.com)",
+      "WebFetch(domain:www.softwaretestinghelp.com)",
+      "WebFetch(domain:www.ipatientcare.com)",
+      "WebFetch(domain:geekflare.com)",
+      "WebFetch(domain:www.selecthub.com)",
+      "WebFetch(domain:www.onc.gov)",
+      "WebFetch(domain:www.trustradius.com)",
+      "WebFetch(domain:searchhealthit.techtarget.com)",
+      "WebFetch(domain:www.beckershospitalreview.com)",
+      "WebFetch(domain:www.theengineer.co.uk)",
+      "WebFetch(domain:www.forbes.com)",
+      "WebFetch(domain:www.pcmag.com)",
+      "WebFetch(domain:www.definitivehc.com)",
+      "WebFetch(domain:chpl.healthit.gov)",
+      "WebSearch",
+      "Bash(node:*)",
+      "Bash(winget:*)",
+      "Bash(export:*)"
+    ]
+  }
+}
