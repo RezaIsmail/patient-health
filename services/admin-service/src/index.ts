@@ -17,8 +17,9 @@ import { referenceDataRoutes } from './routes/reference-data'
 import { templateRoutes } from './routes/templates'
 import { auditAlertRulesRoutes } from './routes/audit-alert-rules'
 
-const PORT = parseInt(process.env.ADMIN_PORT ?? '3004', 10)
+const PORT = parseInt(process.env.PORT ?? process.env.ADMIN_PORT ?? '3004', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
+const CORS_ORIGIN = process.env.CORS_ORIGIN
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-in-prod'
 
 async function bootstrap() {
@@ -46,7 +47,11 @@ async function bootstrap() {
 
   // ── CORS ──────────────────────────────────────────────────────────────────
   await fastify.register(cors, {
-    origin: NODE_ENV === 'production' ? ['https://admin.patienthealth.io'] : true,
+    origin: CORS_ORIGIN
+      ? CORS_ORIGIN.split(',').map((o) => o.trim())
+      : NODE_ENV === 'production'
+        ? ['https://admin.patienthealth.io']
+        : true,
     credentials: true,
   })
 

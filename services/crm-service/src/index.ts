@@ -20,8 +20,9 @@ import { fhirRoutes } from './routes/fhir'
 import { crmInternalRoutes } from './routes/internal'
 import { webhookRoutes } from './routes/webhooks'
 
-const PORT = parseInt(process.env.CRM_PORT ?? '3003', 10)
+const PORT = parseInt(process.env.PORT ?? process.env.CRM_PORT ?? '3003', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
+const CORS_ORIGIN = process.env.CORS_ORIGIN
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-in-prod'
 
 async function bootstrap() {
@@ -49,7 +50,11 @@ async function bootstrap() {
 
   // ── CORS ──────────────────────────────────────────────────────────────────
   await fastify.register(cors, {
-    origin: NODE_ENV === 'production' ? ['https://crm.patienthealth.io'] : true,
+    origin: CORS_ORIGIN
+      ? CORS_ORIGIN.split(',').map((o) => o.trim())
+      : NODE_ENV === 'production'
+        ? ['https://crm.patienthealth.io']
+        : true,
     credentials: true,
   })
 

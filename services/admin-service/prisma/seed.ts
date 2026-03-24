@@ -1122,7 +1122,7 @@ async function main() {
         actorRole: e.actorRole,
         correlationId: `corr-seed-${i}`,
         ipAddress: '10.0.1.' + ((i % 50) + 10),
-        fieldChanges: (e as { fieldChanges?: object }).fieldChanges ?? null,
+        fieldChanges: (e as { fieldChanges?: object }).fieldChanges ?? undefined,
         memberId: e.memberId ?? null,
       },
     })

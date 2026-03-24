@@ -135,6 +135,7 @@ exports.Prisma.PatientScalarFieldEnum = {
   email: 'email',
   photoUrl: 'photoUrl',
   isActive: 'isActive',
+  adminMemberId: 'adminMemberId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -233,7 +234,9 @@ exports.Prisma.ObservationScalarFieldEnum = {
   isAbnormal: 'isAbnormal',
   status: 'status',
   effectiveAt: 'effectiveAt',
-  recordedBy: 'recordedBy'
+  recordedBy: 'recordedBy',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy'
 };
 
 exports.Prisma.ImmunisationScalarFieldEnum = {
@@ -263,8 +266,17 @@ exports.Prisma.EncounterScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   providerId: 'providerId',
+  providerName: 'providerName',
   locationId: 'locationId',
   notes: 'notes',
+  chiefComplaint: 'chiefComplaint',
+  subjective: 'subjective',
+  objective: 'objective',
+  assessment: 'assessment',
+  plan: 'plan',
+  signedAt: 'signedAt',
+  signedBy: 'signedBy',
+  signedByName: 'signedByName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
