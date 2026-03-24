@@ -115,7 +115,7 @@ export async function emrIntegrationRoutes(fastify: FastifyInstance) {
       // Forward the caller's JWT to the EMR service (same JWT secret)
       const authHeader = request.headers['authorization'] as string
 
-      const result = await fetchEmr<{ patient: unknown; activeProblems: unknown[]; medications: unknown[]; allergies: unknown[]; recentVitals: unknown; immunisations: unknown[] }>(
+      const result = await fetchEmr<{ data: { patient: unknown; activeProblems: unknown[]; medications: unknown[]; allergies: unknown[]; recentVitals: unknown; immunisations: unknown[] } }>(
         `/api/patients/${contact.emrPatientId}/chart`,
         authHeader,
         correlationId
@@ -138,7 +138,7 @@ export async function emrIntegrationRoutes(fastify: FastifyInstance) {
           available: true,
           linked: true,
           emrPatientId: contact.emrPatientId,
-          summary: result.data,
+          summary: result.data.data,
         },
       })
     }

@@ -24,8 +24,12 @@ RUN cd apps/admin && npm run build
 FROM nginx:alpine AS runtime
 
 COPY --from=builder /app/apps/admin/dist /usr/share/nginx/html
-COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf
+COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf.template
+
+# Defaults for local Docker Compose; Railway overrides these via env vars
+ENV AUTH_SERVICE_URL=http://auth-service:3001
+ENV BACKEND_SERVICE_URL=http://admin-service:3004
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "envsubst '$AUTH_SERVICE_URL $BACKEND_SERVICE_URL' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

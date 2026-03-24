@@ -29,6 +29,7 @@ import ImmunisationModal from '../components/clinical/ImmunisationModal'
 import LabResultModal from '../components/clinical/LabResultModal'
 import AllergyModal from '../components/clinical/AllergyModal'
 import MedicationModal from '../components/clinical/MedicationModal'
+import ConditionModal from '../components/clinical/ConditionModal'
 import DeleteConfirmModal from '../components/clinical/DeleteConfirmModal'
 import { api } from '../lib/api'
 import { format } from 'date-fns'
@@ -40,11 +41,15 @@ type ChartImmunisation = PatientChartDto['immunisations'][number]
 type ChartLabResult = PatientChartDto['recentResults'][number]
 type ChartAllergy = PatientChartDto['allergies'][number]
 type ChartMedication = PatientChartDto['medications'][number]
+type ChartCondition = PatientChartDto['activeProblems'][number]
 
 // ─── Modal state discriminated union ─────────────────────────────────────────
 
 type ModalState =
   | { type: 'none' }
+  | { type: 'condition-add' }
+  | { type: 'condition-edit'; item: ChartCondition }
+  | { type: 'condition-delete'; item: ChartCondition }
   | { type: 'immunisation-add' }
   | { type: 'immunisation-edit'; item: ChartImmunisation }
   | { type: 'immunisation-delete'; item: ChartImmunisation }
@@ -320,6 +325,16 @@ export default function PatientChartPage() {
 
   // ── Delete mutations ───────────────────────────────────────────────────────
 
+  const deleteCondition = useMutation({
+    mutationFn: async (conditionId: string) => {
+      await api.delete(`/api/patients/${id}/conditions/${conditionId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+      setModal({ type: 'none' })
+    },
+  })
+
   const deleteImmunisation = useMutation({
     mutationFn: async (immunisationId: string) => {
       await api.delete(`/api/patients/${id}/immunisations/${immunisationId}`)
@@ -470,11 +485,20 @@ export default function PatientChartPage() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <SectionHeader
-                    icon={<AlertCircle className="h-3.5 w-3.5" />}
-                    title="Active Problems"
-                    count={chart.activeProblems.length}
-                  />
+                  <div className="flex items-center justify-between">
+                    <SectionHeader
+                      icon={<AlertCircle className="h-3.5 w-3.5" />}
+                      title="Active Problems"
+                      count={chart.activeProblems.length}
+                    />
+                    <button
+                      onClick={() => setModal({ type: 'condition-add' })}
+                      className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                      title="Add condition"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -483,8 +507,26 @@ export default function PatientChartPage() {
                 ) : (
                   <ul className="space-y-2" role="list" aria-label="Active problems">
                     {chart.activeProblems.map((problem) => (
-                      <li key={problem.id} className="text-xs">
-                        <p className="font-medium text-gray-800 leading-snug">{problem.display}</p>
+                      <li key={problem.id} className="group text-xs">
+                        <div className="flex items-start justify-between gap-1">
+                          <p className="font-medium text-gray-800 leading-snug">{problem.display}</p>
+                          <div className="flex flex-shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => setModal({ type: 'condition-edit', item: problem })}
+                              className="rounded p-0.5 text-gray-400 hover:text-blue-600"
+                              title="Edit"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => setModal({ type: 'condition-delete', item: problem })}
+                              className="rounded p-0.5 text-gray-400 hover:text-red-600"
+                              title="Remove"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
                         <div className="flex flex-wrap items-center gap-1 mt-0.5">
                           {problem.code && (
                             <span className="text-gray-400 font-mono text-[10px]">{problem.code}</span>
@@ -921,6 +963,27 @@ export default function PatientChartPage() {
       </div>
 
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
+
+      {(modal.type === 'condition-add' || modal.type === 'condition-edit') && (
+        <ConditionModal
+          patientId={id!}
+          condition={modal.type === 'condition-edit' ? modal.item : undefined}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'condition-delete' && (
+        <DeleteConfirmModal
+          title="Remove Condition"
+          message={`Remove "${modal.item.display}" from the active problem list? This cannot be undone.`}
+          confirmLabel="Remove"
+          isDestructive
+          onConfirm={() => deleteCondition.mutate(modal.item.id)}
+          onCancel={() => setModal({ type: 'none' })}
+          isLoading={deleteCondition.isPending}
+        />
+      )}
 
       {modal.type === 'immunisation-add' && (
         <ImmunisationModal

@@ -2076,6 +2076,7 @@ export namespace Prisma {
     email: string | null
     photoUrl: string | null
     isActive: boolean | null
+    adminMemberId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2093,6 +2094,7 @@ export namespace Prisma {
     email: string | null
     photoUrl: string | null
     isActive: boolean | null
+    adminMemberId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2110,6 +2112,7 @@ export namespace Prisma {
     email: number
     photoUrl: number
     isActive: number
+    adminMemberId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2129,6 +2132,7 @@ export namespace Prisma {
     email?: true
     photoUrl?: true
     isActive?: true
+    adminMemberId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2146,6 +2150,7 @@ export namespace Prisma {
     email?: true
     photoUrl?: true
     isActive?: true
+    adminMemberId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2163,6 +2168,7 @@ export namespace Prisma {
     email?: true
     photoUrl?: true
     isActive?: true
+    adminMemberId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2253,6 +2259,7 @@ export namespace Prisma {
     email: string | null
     photoUrl: string | null
     isActive: boolean
+    adminMemberId: string | null
     createdAt: Date
     updatedAt: Date
     _count: PatientCountAggregateOutputType | null
@@ -2287,6 +2294,7 @@ export namespace Prisma {
     email?: boolean
     photoUrl?: boolean
     isActive?: boolean
+    adminMemberId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     address?: boolean | Patient$addressArgs<ExtArgs>
@@ -2317,6 +2325,7 @@ export namespace Prisma {
     email?: boolean
     photoUrl?: boolean
     isActive?: boolean
+    adminMemberId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["patient"]>
@@ -2334,6 +2343,7 @@ export namespace Prisma {
     email?: boolean
     photoUrl?: boolean
     isActive?: boolean
+    adminMemberId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -2384,6 +2394,7 @@ export namespace Prisma {
       email: string | null
       photoUrl: string | null
       isActive: boolean
+      adminMemberId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["patient"]>
@@ -2803,6 +2814,7 @@ export namespace Prisma {
     readonly email: FieldRef<"Patient", 'String'>
     readonly photoUrl: FieldRef<"Patient", 'String'>
     readonly isActive: FieldRef<"Patient", 'Boolean'>
+    readonly adminMemberId: FieldRef<"Patient", 'String'>
     readonly createdAt: FieldRef<"Patient", 'DateTime'>
     readonly updatedAt: FieldRef<"Patient", 'DateTime'>
   }
@@ -9454,6 +9466,8 @@ export namespace Prisma {
     status: string | null
     effectiveAt: Date | null
     recordedBy: string | null
+    reviewedAt: Date | null
+    reviewedBy: string | null
   }
 
   export type ObservationMaxAggregateOutputType = {
@@ -9472,6 +9486,8 @@ export namespace Prisma {
     status: string | null
     effectiveAt: Date | null
     recordedBy: string | null
+    reviewedAt: Date | null
+    reviewedBy: string | null
   }
 
   export type ObservationCountAggregateOutputType = {
@@ -9490,6 +9506,8 @@ export namespace Prisma {
     status: number
     effectiveAt: number
     recordedBy: number
+    reviewedAt: number
+    reviewedBy: number
     _all: number
   }
 
@@ -9522,6 +9540,8 @@ export namespace Prisma {
     status?: true
     effectiveAt?: true
     recordedBy?: true
+    reviewedAt?: true
+    reviewedBy?: true
   }
 
   export type ObservationMaxAggregateInputType = {
@@ -9540,6 +9560,8 @@ export namespace Prisma {
     status?: true
     effectiveAt?: true
     recordedBy?: true
+    reviewedAt?: true
+    reviewedBy?: true
   }
 
   export type ObservationCountAggregateInputType = {
@@ -9558,6 +9580,8 @@ export namespace Prisma {
     status?: true
     effectiveAt?: true
     recordedBy?: true
+    reviewedAt?: true
+    reviewedBy?: true
     _all?: true
   }
 
@@ -9663,6 +9687,8 @@ export namespace Prisma {
     status: string
     effectiveAt: Date
     recordedBy: string
+    reviewedAt: Date | null
+    reviewedBy: string | null
     _count: ObservationCountAggregateOutputType | null
     _avg: ObservationAvgAggregateOutputType | null
     _sum: ObservationSumAggregateOutputType | null
@@ -9700,6 +9726,8 @@ export namespace Prisma {
     status?: boolean
     effectiveAt?: boolean
     recordedBy?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
     encounter?: boolean | Observation$encounterArgs<ExtArgs>
   }, ExtArgs["result"]["observation"]>
@@ -9720,6 +9748,8 @@ export namespace Prisma {
     status?: boolean
     effectiveAt?: boolean
     recordedBy?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
     encounter?: boolean | Observation$encounterArgs<ExtArgs>
   }, ExtArgs["result"]["observation"]>
@@ -9740,6 +9770,8 @@ export namespace Prisma {
     status?: boolean
     effectiveAt?: boolean
     recordedBy?: boolean
+    reviewedAt?: boolean
+    reviewedBy?: boolean
   }
 
   export type ObservationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9773,6 +9805,8 @@ export namespace Prisma {
       status: string
       effectiveAt: Date
       recordedBy: string
+      reviewedAt: Date | null
+      reviewedBy: string | null
     }, ExtArgs["result"]["observation"]>
     composites: {}
   }
@@ -10183,6 +10217,8 @@ export namespace Prisma {
     readonly status: FieldRef<"Observation", 'String'>
     readonly effectiveAt: FieldRef<"Observation", 'DateTime'>
     readonly recordedBy: FieldRef<"Observation", 'String'>
+    readonly reviewedAt: FieldRef<"Observation", 'DateTime'>
+    readonly reviewedBy: FieldRef<"Observation", 'String'>
   }
     
 
@@ -11580,8 +11616,17 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     providerId: string | null
+    providerName: string | null
     locationId: string | null
     notes: string | null
+    chiefComplaint: string | null
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
+    signedAt: Date | null
+    signedBy: string | null
+    signedByName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11597,8 +11642,17 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     providerId: string | null
+    providerName: string | null
     locationId: string | null
     notes: string | null
+    chiefComplaint: string | null
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
+    signedAt: Date | null
+    signedBy: string | null
+    signedByName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11614,8 +11668,17 @@ export namespace Prisma {
     startTime: number
     endTime: number
     providerId: number
+    providerName: number
     locationId: number
     notes: number
+    chiefComplaint: number
+    subjective: number
+    objective: number
+    assessment: number
+    plan: number
+    signedAt: number
+    signedBy: number
+    signedByName: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -11633,8 +11696,17 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     providerId?: true
+    providerName?: true
     locationId?: true
     notes?: true
+    chiefComplaint?: true
+    subjective?: true
+    objective?: true
+    assessment?: true
+    plan?: true
+    signedAt?: true
+    signedBy?: true
+    signedByName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11650,8 +11722,17 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     providerId?: true
+    providerName?: true
     locationId?: true
     notes?: true
+    chiefComplaint?: true
+    subjective?: true
+    objective?: true
+    assessment?: true
+    plan?: true
+    signedAt?: true
+    signedBy?: true
+    signedByName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11667,8 +11748,17 @@ export namespace Prisma {
     startTime?: true
     endTime?: true
     providerId?: true
+    providerName?: true
     locationId?: true
     notes?: true
+    chiefComplaint?: true
+    subjective?: true
+    objective?: true
+    assessment?: true
+    plan?: true
+    signedAt?: true
+    signedBy?: true
+    signedByName?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -11757,8 +11847,17 @@ export namespace Prisma {
     startTime: Date | null
     endTime: Date | null
     providerId: string
+    providerName: string | null
     locationId: string | null
     notes: string | null
+    chiefComplaint: string | null
+    subjective: string | null
+    objective: string | null
+    assessment: string | null
+    plan: string | null
+    signedAt: Date | null
+    signedBy: string | null
+    signedByName: string | null
     createdAt: Date
     updatedAt: Date
     _count: EncounterCountAggregateOutputType | null
@@ -11791,8 +11890,17 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     providerId?: boolean
+    providerName?: boolean
     locationId?: boolean
     notes?: boolean
+    chiefComplaint?: boolean
+    subjective?: boolean
+    objective?: boolean
+    assessment?: boolean
+    plan?: boolean
+    signedAt?: boolean
+    signedBy?: boolean
+    signedByName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11814,8 +11922,17 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     providerId?: boolean
+    providerName?: boolean
     locationId?: boolean
     notes?: boolean
+    chiefComplaint?: boolean
+    subjective?: boolean
+    objective?: boolean
+    assessment?: boolean
+    plan?: boolean
+    signedAt?: boolean
+    signedBy?: boolean
+    signedByName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11832,8 +11949,17 @@ export namespace Prisma {
     startTime?: boolean
     endTime?: boolean
     providerId?: boolean
+    providerName?: boolean
     locationId?: boolean
     notes?: boolean
+    chiefComplaint?: boolean
+    subjective?: boolean
+    objective?: boolean
+    assessment?: boolean
+    plan?: boolean
+    signedAt?: boolean
+    signedBy?: boolean
+    signedByName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -11870,8 +11996,17 @@ export namespace Prisma {
       startTime: Date | null
       endTime: Date | null
       providerId: string
+      providerName: string | null
       locationId: string | null
       notes: string | null
+      chiefComplaint: string | null
+      subjective: string | null
+      objective: string | null
+      assessment: string | null
+      plan: string | null
+      signedAt: Date | null
+      signedBy: string | null
+      signedByName: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["encounter"]>
@@ -12282,8 +12417,17 @@ export namespace Prisma {
     readonly startTime: FieldRef<"Encounter", 'DateTime'>
     readonly endTime: FieldRef<"Encounter", 'DateTime'>
     readonly providerId: FieldRef<"Encounter", 'String'>
+    readonly providerName: FieldRef<"Encounter", 'String'>
     readonly locationId: FieldRef<"Encounter", 'String'>
     readonly notes: FieldRef<"Encounter", 'String'>
+    readonly chiefComplaint: FieldRef<"Encounter", 'String'>
+    readonly subjective: FieldRef<"Encounter", 'String'>
+    readonly objective: FieldRef<"Encounter", 'String'>
+    readonly assessment: FieldRef<"Encounter", 'String'>
+    readonly plan: FieldRef<"Encounter", 'String'>
+    readonly signedAt: FieldRef<"Encounter", 'DateTime'>
+    readonly signedBy: FieldRef<"Encounter", 'String'>
+    readonly signedByName: FieldRef<"Encounter", 'String'>
     readonly createdAt: FieldRef<"Encounter", 'DateTime'>
     readonly updatedAt: FieldRef<"Encounter", 'DateTime'>
   }
@@ -15830,6 +15974,7 @@ export namespace Prisma {
     email: 'email',
     photoUrl: 'photoUrl',
     isActive: 'isActive',
+    adminMemberId: 'adminMemberId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -15949,7 +16094,9 @@ export namespace Prisma {
     isAbnormal: 'isAbnormal',
     status: 'status',
     effectiveAt: 'effectiveAt',
-    recordedBy: 'recordedBy'
+    recordedBy: 'recordedBy',
+    reviewedAt: 'reviewedAt',
+    reviewedBy: 'reviewedBy'
   };
 
   export type ObservationScalarFieldEnum = (typeof ObservationScalarFieldEnum)[keyof typeof ObservationScalarFieldEnum]
@@ -15985,8 +16132,17 @@ export namespace Prisma {
     startTime: 'startTime',
     endTime: 'endTime',
     providerId: 'providerId',
+    providerName: 'providerName',
     locationId: 'locationId',
     notes: 'notes',
+    chiefComplaint: 'chiefComplaint',
+    subjective: 'subjective',
+    objective: 'objective',
+    assessment: 'assessment',
+    plan: 'plan',
+    signedAt: 'signedAt',
+    signedBy: 'signedBy',
+    signedByName: 'signedByName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -16182,6 +16338,7 @@ export namespace Prisma {
     email?: StringNullableFilter<"Patient"> | string | null
     photoUrl?: StringNullableFilter<"Patient"> | string | null
     isActive?: BoolFilter<"Patient"> | boolean
+    adminMemberId?: StringNullableFilter<"Patient"> | string | null
     createdAt?: DateTimeFilter<"Patient"> | Date | string
     updatedAt?: DateTimeFilter<"Patient"> | Date | string
     address?: XOR<PatientAddressNullableRelationFilter, PatientAddressWhereInput> | null
@@ -16211,6 +16368,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     photoUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    adminMemberId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     address?: PatientAddressOrderByWithRelationInput
@@ -16230,6 +16388,7 @@ export namespace Prisma {
   export type PatientWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     mrn?: string
+    adminMemberId?: string
     AND?: PatientWhereInput | PatientWhereInput[]
     OR?: PatientWhereInput[]
     NOT?: PatientWhereInput | PatientWhereInput[]
@@ -16257,7 +16416,7 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     documents?: ClinicalDocumentListRelationFilter
     auditLogs?: AuditLogListRelationFilter
-  }, "id" | "mrn">
+  }, "id" | "mrn" | "adminMemberId">
 
   export type PatientOrderByWithAggregationInput = {
     id?: SortOrder
@@ -16272,6 +16431,7 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     photoUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    adminMemberId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PatientCountOrderByAggregateInput
@@ -16295,6 +16455,7 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"Patient"> | string | null
     photoUrl?: StringNullableWithAggregatesFilter<"Patient"> | string | null
     isActive?: BoolWithAggregatesFilter<"Patient"> | boolean
+    adminMemberId?: StringNullableWithAggregatesFilter<"Patient"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Patient"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Patient"> | Date | string
   }
@@ -16811,6 +16972,8 @@ export namespace Prisma {
     status?: StringFilter<"Observation"> | string
     effectiveAt?: DateTimeFilter<"Observation"> | Date | string
     recordedBy?: StringFilter<"Observation"> | string
+    reviewedAt?: DateTimeNullableFilter<"Observation"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"Observation"> | string | null
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
     encounter?: XOR<EncounterNullableRelationFilter, EncounterWhereInput> | null
   }
@@ -16831,6 +16994,8 @@ export namespace Prisma {
     status?: SortOrder
     effectiveAt?: SortOrder
     recordedBy?: SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
     patient?: PatientOrderByWithRelationInput
     encounter?: EncounterOrderByWithRelationInput
   }
@@ -16854,6 +17019,8 @@ export namespace Prisma {
     status?: StringFilter<"Observation"> | string
     effectiveAt?: DateTimeFilter<"Observation"> | Date | string
     recordedBy?: StringFilter<"Observation"> | string
+    reviewedAt?: DateTimeNullableFilter<"Observation"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"Observation"> | string | null
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
     encounter?: XOR<EncounterNullableRelationFilter, EncounterWhereInput> | null
   }, "id">
@@ -16874,6 +17041,8 @@ export namespace Prisma {
     status?: SortOrder
     effectiveAt?: SortOrder
     recordedBy?: SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewedBy?: SortOrderInput | SortOrder
     _count?: ObservationCountOrderByAggregateInput
     _avg?: ObservationAvgOrderByAggregateInput
     _max?: ObservationMaxOrderByAggregateInput
@@ -16900,6 +17069,8 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"Observation"> | string
     effectiveAt?: DateTimeWithAggregatesFilter<"Observation"> | Date | string
     recordedBy?: StringWithAggregatesFilter<"Observation"> | string
+    reviewedAt?: DateTimeNullableWithAggregatesFilter<"Observation"> | Date | string | null
+    reviewedBy?: StringNullableWithAggregatesFilter<"Observation"> | string | null
   }
 
   export type ImmunisationWhereInput = {
@@ -17011,8 +17182,17 @@ export namespace Prisma {
     startTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     providerId?: StringFilter<"Encounter"> | string
+    providerName?: StringNullableFilter<"Encounter"> | string | null
     locationId?: StringNullableFilter<"Encounter"> | string | null
     notes?: StringNullableFilter<"Encounter"> | string | null
+    chiefComplaint?: StringNullableFilter<"Encounter"> | string | null
+    subjective?: StringNullableFilter<"Encounter"> | string | null
+    objective?: StringNullableFilter<"Encounter"> | string | null
+    assessment?: StringNullableFilter<"Encounter"> | string | null
+    plan?: StringNullableFilter<"Encounter"> | string | null
+    signedAt?: DateTimeNullableFilter<"Encounter"> | Date | string | null
+    signedBy?: StringNullableFilter<"Encounter"> | string | null
+    signedByName?: StringNullableFilter<"Encounter"> | string | null
     createdAt?: DateTimeFilter<"Encounter"> | Date | string
     updatedAt?: DateTimeFilter<"Encounter"> | Date | string
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
@@ -17033,8 +17213,17 @@ export namespace Prisma {
     startTime?: SortOrderInput | SortOrder
     endTime?: SortOrderInput | SortOrder
     providerId?: SortOrder
+    providerName?: SortOrderInput | SortOrder
     locationId?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    chiefComplaint?: SortOrderInput | SortOrder
+    subjective?: SortOrderInput | SortOrder
+    objective?: SortOrderInput | SortOrder
+    assessment?: SortOrderInput | SortOrder
+    plan?: SortOrderInput | SortOrder
+    signedAt?: SortOrderInput | SortOrder
+    signedBy?: SortOrderInput | SortOrder
+    signedByName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     patient?: PatientOrderByWithRelationInput
@@ -17058,8 +17247,17 @@ export namespace Prisma {
     startTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     providerId?: StringFilter<"Encounter"> | string
+    providerName?: StringNullableFilter<"Encounter"> | string | null
     locationId?: StringNullableFilter<"Encounter"> | string | null
     notes?: StringNullableFilter<"Encounter"> | string | null
+    chiefComplaint?: StringNullableFilter<"Encounter"> | string | null
+    subjective?: StringNullableFilter<"Encounter"> | string | null
+    objective?: StringNullableFilter<"Encounter"> | string | null
+    assessment?: StringNullableFilter<"Encounter"> | string | null
+    plan?: StringNullableFilter<"Encounter"> | string | null
+    signedAt?: DateTimeNullableFilter<"Encounter"> | Date | string | null
+    signedBy?: StringNullableFilter<"Encounter"> | string | null
+    signedByName?: StringNullableFilter<"Encounter"> | string | null
     createdAt?: DateTimeFilter<"Encounter"> | Date | string
     updatedAt?: DateTimeFilter<"Encounter"> | Date | string
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
@@ -17080,8 +17278,17 @@ export namespace Prisma {
     startTime?: SortOrderInput | SortOrder
     endTime?: SortOrderInput | SortOrder
     providerId?: SortOrder
+    providerName?: SortOrderInput | SortOrder
     locationId?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    chiefComplaint?: SortOrderInput | SortOrder
+    subjective?: SortOrderInput | SortOrder
+    objective?: SortOrderInput | SortOrder
+    assessment?: SortOrderInput | SortOrder
+    plan?: SortOrderInput | SortOrder
+    signedAt?: SortOrderInput | SortOrder
+    signedBy?: SortOrderInput | SortOrder
+    signedByName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EncounterCountOrderByAggregateInput
@@ -17103,8 +17310,17 @@ export namespace Prisma {
     startTime?: DateTimeNullableWithAggregatesFilter<"Encounter"> | Date | string | null
     endTime?: DateTimeNullableWithAggregatesFilter<"Encounter"> | Date | string | null
     providerId?: StringWithAggregatesFilter<"Encounter"> | string
+    providerName?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
     locationId?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    chiefComplaint?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    subjective?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    objective?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    assessment?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    plan?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    signedAt?: DateTimeNullableWithAggregatesFilter<"Encounter"> | Date | string | null
+    signedBy?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
+    signedByName?: StringNullableWithAggregatesFilter<"Encounter"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Encounter"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Encounter"> | Date | string
   }
@@ -17392,6 +17608,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -17421,6 +17638,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -17450,6 +17668,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -17479,6 +17698,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -17508,6 +17728,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -17525,6 +17746,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -17542,6 +17764,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -18105,6 +18328,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
     patient: PatientCreateNestedOneWithoutObservationsInput
     encounter?: EncounterCreateNestedOneWithoutObservationsInput
   }
@@ -18125,6 +18350,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ObservationUpdateInput = {
@@ -18141,6 +18368,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
     patient?: PatientUpdateOneRequiredWithoutObservationsNestedInput
     encounter?: EncounterUpdateOneWithoutObservationsNestedInput
   }
@@ -18161,6 +18390,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationCreateManyInput = {
@@ -18179,6 +18410,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ObservationUpdateManyMutationInput = {
@@ -18195,6 +18428,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationUncheckedUpdateManyInput = {
@@ -18213,6 +18448,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ImmunisationCreateInput = {
@@ -18336,8 +18573,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEncountersInput
@@ -18358,8 +18604,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionUncheckedCreateNestedManyWithoutEncounterInput
@@ -18378,8 +18633,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEncountersNestedInput
@@ -18400,8 +18664,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUncheckedUpdateManyWithoutEncounterNestedInput
@@ -18421,8 +18694,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -18437,8 +18719,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -18454,8 +18745,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -18943,6 +19243,7 @@ export namespace Prisma {
     email?: SortOrder
     photoUrl?: SortOrder
     isActive?: SortOrder
+    adminMemberId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -18960,6 +19261,7 @@ export namespace Prisma {
     email?: SortOrder
     photoUrl?: SortOrder
     isActive?: SortOrder
+    adminMemberId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -18977,6 +19279,7 @@ export namespace Prisma {
     email?: SortOrder
     photoUrl?: SortOrder
     isActive?: SortOrder
+    adminMemberId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -19373,6 +19676,8 @@ export namespace Prisma {
     status?: SortOrder
     effectiveAt?: SortOrder
     recordedBy?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
   }
 
   export type ObservationAvgOrderByAggregateInput = {
@@ -19397,6 +19702,8 @@ export namespace Prisma {
     status?: SortOrder
     effectiveAt?: SortOrder
     recordedBy?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
   }
 
   export type ObservationMinOrderByAggregateInput = {
@@ -19415,6 +19722,8 @@ export namespace Prisma {
     status?: SortOrder
     effectiveAt?: SortOrder
     recordedBy?: SortOrder
+    reviewedAt?: SortOrder
+    reviewedBy?: SortOrder
   }
 
   export type ObservationSumOrderByAggregateInput = {
@@ -19498,8 +19807,17 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     providerId?: SortOrder
+    providerName?: SortOrder
     locationId?: SortOrder
     notes?: SortOrder
+    chiefComplaint?: SortOrder
+    subjective?: SortOrder
+    objective?: SortOrder
+    assessment?: SortOrder
+    plan?: SortOrder
+    signedAt?: SortOrder
+    signedBy?: SortOrder
+    signedByName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -19515,8 +19833,17 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     providerId?: SortOrder
+    providerName?: SortOrder
     locationId?: SortOrder
     notes?: SortOrder
+    chiefComplaint?: SortOrder
+    subjective?: SortOrder
+    objective?: SortOrder
+    assessment?: SortOrder
+    plan?: SortOrder
+    signedAt?: SortOrder
+    signedBy?: SortOrder
+    signedByName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -19532,8 +19859,17 @@ export namespace Prisma {
     startTime?: SortOrder
     endTime?: SortOrder
     providerId?: SortOrder
+    providerName?: SortOrder
     locationId?: SortOrder
     notes?: SortOrder
+    chiefComplaint?: SortOrder
+    subjective?: SortOrder
+    objective?: SortOrder
+    assessment?: SortOrder
+    plan?: SortOrder
+    signedAt?: SortOrder
+    signedBy?: SortOrder
+    signedByName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -21098,6 +21434,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
     encounter?: EncounterCreateNestedOneWithoutObservationsInput
   }
 
@@ -21116,6 +21454,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ObservationCreateOrConnectWithoutPatientInput = {
@@ -21178,8 +21518,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionCreateNestedManyWithoutEncounterInput
@@ -21198,8 +21547,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionUncheckedCreateNestedManyWithoutEncounterInput
@@ -21559,6 +21917,8 @@ export namespace Prisma {
     status?: StringFilter<"Observation"> | string
     effectiveAt?: DateTimeFilter<"Observation"> | Date | string
     recordedBy?: StringFilter<"Observation"> | string
+    reviewedAt?: DateTimeNullableFilter<"Observation"> | Date | string | null
+    reviewedBy?: StringNullableFilter<"Observation"> | string | null
   }
 
   export type ImmunisationUpsertWithWhereUniqueWithoutPatientInput = {
@@ -21626,8 +21986,17 @@ export namespace Prisma {
     startTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     endTime?: DateTimeNullableFilter<"Encounter"> | Date | string | null
     providerId?: StringFilter<"Encounter"> | string
+    providerName?: StringNullableFilter<"Encounter"> | string | null
     locationId?: StringNullableFilter<"Encounter"> | string | null
     notes?: StringNullableFilter<"Encounter"> | string | null
+    chiefComplaint?: StringNullableFilter<"Encounter"> | string | null
+    subjective?: StringNullableFilter<"Encounter"> | string | null
+    objective?: StringNullableFilter<"Encounter"> | string | null
+    assessment?: StringNullableFilter<"Encounter"> | string | null
+    plan?: StringNullableFilter<"Encounter"> | string | null
+    signedAt?: DateTimeNullableFilter<"Encounter"> | Date | string | null
+    signedBy?: StringNullableFilter<"Encounter"> | string | null
+    signedByName?: StringNullableFilter<"Encounter"> | string | null
     createdAt?: DateTimeFilter<"Encounter"> | Date | string
     updatedAt?: DateTimeFilter<"Encounter"> | Date | string
   }
@@ -21746,6 +22115,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emergencyContacts?: EmergencyContactCreateNestedManyWithoutPatientInput
@@ -21774,6 +22144,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emergencyContacts?: EmergencyContactUncheckedCreateNestedManyWithoutPatientInput
@@ -21818,6 +22189,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emergencyContacts?: EmergencyContactUpdateManyWithoutPatientNestedInput
@@ -21846,6 +22218,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emergencyContacts?: EmergencyContactUncheckedUpdateManyWithoutPatientNestedInput
@@ -21874,6 +22247,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -21902,6 +22276,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -21946,6 +22321,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -21974,6 +22350,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22002,6 +22379,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22030,6 +22408,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -22074,6 +22453,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -22102,6 +22482,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22130,6 +22511,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22158,6 +22540,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -22188,8 +22571,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEncountersInput
@@ -22209,8 +22601,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     medications?: MedicationRequestUncheckedCreateNestedManyWithoutEncounterInput
@@ -22247,6 +22648,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -22275,6 +22677,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22311,8 +22714,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEncountersNestedInput
@@ -22332,8 +22744,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     medications?: MedicationRequestUncheckedUpdateManyWithoutEncounterNestedInput
@@ -22354,6 +22775,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22382,6 +22804,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -22412,8 +22835,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEncountersInput
@@ -22433,8 +22865,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionUncheckedCreateNestedManyWithoutEncounterInput
@@ -22471,6 +22912,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -22499,6 +22941,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22535,8 +22978,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEncountersNestedInput
@@ -22556,8 +23008,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUncheckedUpdateManyWithoutEncounterNestedInput
@@ -22578,6 +23039,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22606,6 +23068,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -22650,6 +23113,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -22678,6 +23142,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22706,6 +23171,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22734,6 +23200,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -22764,8 +23231,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEncountersInput
@@ -22785,8 +23261,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionUncheckedCreateNestedManyWithoutEncounterInput
@@ -22823,6 +23308,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -22851,6 +23337,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -22887,8 +23374,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEncountersNestedInput
@@ -22908,8 +23404,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUncheckedUpdateManyWithoutEncounterNestedInput
@@ -22930,6 +23435,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -22958,6 +23464,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -23002,6 +23509,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -23030,6 +23538,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -23058,6 +23567,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -23086,6 +23596,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -23202,6 +23713,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
     patient: PatientCreateNestedOneWithoutObservationsInput
   }
 
@@ -23220,6 +23733,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ObservationCreateOrConnectWithoutEncounterInput = {
@@ -23294,6 +23809,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -23322,6 +23838,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -23414,6 +23931,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -23442,6 +23960,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -23486,6 +24005,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -23514,6 +24034,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -23542,6 +24063,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -23570,6 +24092,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -23600,8 +24123,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEncountersInput
@@ -23621,8 +24153,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     conditions?: ConditionUncheckedCreateNestedManyWithoutEncounterInput
@@ -23659,6 +24200,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -23687,6 +24229,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -23723,8 +24266,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEncountersNestedInput
@@ -23744,8 +24296,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUncheckedUpdateManyWithoutEncounterNestedInput
@@ -23766,6 +24327,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressCreateNestedOneWithoutPatientInput
@@ -23794,6 +24356,7 @@ export namespace Prisma {
     email?: string | null
     photoUrl?: string | null
     isActive?: boolean
+    adminMemberId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     address?: PatientAddressUncheckedCreateNestedOneWithoutPatientInput
@@ -23838,6 +24401,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUpdateOneWithoutPatientNestedInput
@@ -23866,6 +24430,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    adminMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     address?: PatientAddressUncheckedUpdateOneWithoutPatientNestedInput
@@ -23959,6 +24524,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ImmunisationCreateManyPatientInput = {
@@ -23986,8 +24553,17 @@ export namespace Prisma {
     startTime?: Date | string | null
     endTime?: Date | string | null
     providerId: string
+    providerName?: string | null
     locationId?: string | null
     notes?: string | null
+    chiefComplaint?: string | null
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    plan?: string | null
+    signedAt?: Date | string | null
+    signedBy?: string | null
+    signedByName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24236,6 +24812,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
     encounter?: EncounterUpdateOneWithoutObservationsNestedInput
   }
 
@@ -24254,6 +24832,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationUncheckedUpdateManyWithoutPatientInput = {
@@ -24271,6 +24851,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ImmunisationUpdateWithoutPatientInput = {
@@ -24328,8 +24910,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUpdateManyWithoutEncounterNestedInput
@@ -24348,8 +24939,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     conditions?: ConditionUncheckedUpdateManyWithoutEncounterNestedInput
@@ -24368,8 +24968,17 @@ export namespace Prisma {
     startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     providerId?: StringFieldUpdateOperationsInput | string
+    providerName?: NullableStringFieldUpdateOperationsInput | string | null
     locationId?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    plan?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    signedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24543,6 +25152,8 @@ export namespace Prisma {
     status?: string
     effectiveAt: Date | string
     recordedBy: string
+    reviewedAt?: Date | string | null
+    reviewedBy?: string | null
   }
 
   export type ClinicalDocumentCreateManyEncounterInput = {
@@ -24666,6 +25277,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
     patient?: PatientUpdateOneRequiredWithoutObservationsNestedInput
   }
 
@@ -24684,6 +25297,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ObservationUncheckedUpdateManyWithoutEncounterInput = {
@@ -24701,6 +25316,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     effectiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ClinicalDocumentUpdateWithoutEncounterInput = {
