@@ -30,6 +30,10 @@ RUN cd services/auth-service && npx prisma generate
 # Compile TypeScript
 RUN cd services/auth-service && npm run build
 
+# Copy Prisma generated client into dist so it ships as part of the compiled output.
+# dist/lib/prisma.js resolves require('../generated/prisma') → dist/generated/prisma
+RUN cp -r /app/services/auth-service/src/generated/prisma /app/services/auth-service/dist/generated/prisma
+
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
 
@@ -43,19 +47,14 @@ ENV NODE_ENV=production
 # Hoisted workspace deps (fastify, zod, prisma, etc. live here)
 COPY --from=builder /app/node_modules ./node_modules
 
-# Compiled service output
+# Compiled service output (includes dist/generated/prisma from the cp above)
 COPY --from=builder /app/services/auth-service/dist ./dist
 
 # Prisma schema (used for migrations / seeding)
 COPY --from=builder /app/services/auth-service/prisma ./prisma
 
-# Prisma generated client with native engine binary.
-# Must live at ./dist/generated/prisma so that dist/lib/prisma.js can resolve
-# require('../generated/prisma') — i.e. /app/dist/lib/../generated/prisma.
-COPY --from=builder /app/services/auth-service/src/generated/prisma ./dist/generated/prisma
-
 COPY --from=builder /app/services/auth-service/package.json ./
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && echo '=== Starting node ===' && ls dist/ && node dist/index.js 2>&1; echo '=== Node exited: '$?"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
