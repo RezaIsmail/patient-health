@@ -1,10 +1,62 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, AlertCircle, Pill, FlaskConical, FileText, Calendar, Syringe, Activity, Thermometer, Heart, Wind, Weight, Ruler } from 'lucide-react'
+import {
+  ArrowLeft,
+  AlertCircle,
+  Pill,
+  FlaskConical,
+  FileText,
+  Calendar,
+  Syringe,
+  Activity,
+  Thermometer,
+  Heart,
+  Wind,
+  Weight,
+  Ruler,
+  Plus,
+  Pencil,
+  Trash2,
+  PenLine,
+  CheckCircle,
+  Clock,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, Skeleton, Badge, cn } from '@patient-health/ui'
+import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { usePatientChart } from '../hooks/usePatientChart'
 import PatientHeader from '../components/PatientHeader'
+import ImmunisationModal from '../components/clinical/ImmunisationModal'
+import LabResultModal from '../components/clinical/LabResultModal'
+import AllergyModal from '../components/clinical/AllergyModal'
+import MedicationModal from '../components/clinical/MedicationModal'
+import DeleteConfirmModal from '../components/clinical/DeleteConfirmModal'
+import { api } from '../lib/api'
 import { format } from 'date-fns'
 import type { PatientChartDto } from '@patient-health/types'
+
+// ─── Chart entity types ───────────────────────────────────────────────────────
+
+type ChartImmunisation = PatientChartDto['immunisations'][number]
+type ChartLabResult = PatientChartDto['recentResults'][number]
+type ChartAllergy = PatientChartDto['allergies'][number]
+type ChartMedication = PatientChartDto['medications'][number]
+
+// ─── Modal state discriminated union ─────────────────────────────────────────
+
+type ModalState =
+  | { type: 'none' }
+  | { type: 'immunisation-add' }
+  | { type: 'immunisation-edit'; item: ChartImmunisation }
+  | { type: 'immunisation-delete'; item: ChartImmunisation }
+  | { type: 'lab-add' }
+  | { type: 'lab-edit'; item: ChartLabResult }
+  | { type: 'lab-delete'; item: ChartLabResult }
+  | { type: 'allergy-add' }
+  | { type: 'allergy-edit'; item: ChartAllergy }
+  | { type: 'allergy-delete'; item: ChartAllergy }
+  | { type: 'medication-add' }
+  | { type: 'medication-edit'; item: ChartMedication }
+  | { type: 'medication-delete'; item: ChartMedication }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,16 +76,20 @@ function formatDateTime(iso: string): string {
   }
 }
 
-// ─── Section header with count badge ─────────────────────────────────────────
+// ─── Section header with count badge and Add button ──────────────────────────
 
 function SectionHeader({
   icon,
   title,
   count,
+  onAdd,
+  addLabel,
 }: {
   icon: React.ReactNode
   title: string
   count?: number
+  onAdd?: () => void
+  addLabel?: string
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -42,9 +98,18 @@ function SectionHeader({
       </span>
       <span className="text-sm font-semibold text-gray-800">{title}</span>
       {count !== undefined && count > 0 && (
-        <Badge variant="secondary" className="text-[11px] font-semibold px-1.5 py-0 ml-auto">
+        <Badge variant="secondary" className="text-[11px] font-semibold px-1.5 py-0">
           {count}
         </Badge>
+      )}
+      {onAdd && (
+        <button
+          onClick={onAdd}
+          aria-label={addLabel ?? `Add ${title}`}
+          className="ml-auto flex h-6 w-6 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
       )}
     </div>
   )
@@ -210,18 +275,114 @@ function VitalsGrid({ vitals }: { vitals: NonNullable<PatientChartDto['recentVit
   )
 }
 
+// ─── Row action buttons ───────────────────────────────────────────────────────
+
+function RowActions({
+  onEdit,
+  onDelete,
+  editLabel,
+  deleteLabel,
+}: {
+  onEdit: () => void
+  onDelete: () => void
+  editLabel: string
+  deleteLabel: string
+}) {
+  return (
+    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+      <button
+        onClick={onEdit}
+        aria-label={editLabel}
+        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <Pencil className="h-3 w-3" />
+      </button>
+      <button
+        onClick={onDelete}
+        aria-label={deleteLabel}
+        className="flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+    </div>
+  )
+}
+
 // ─── Full chart page ──────────────────────────────────────────────────────────
 
 export default function PatientChartPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: chart, isLoading, isError } = usePatientChart(id ?? '')
+
+  const [modal, setModal] = useState<ModalState>({ type: 'none' })
+
+  // ── Delete mutations ───────────────────────────────────────────────────────
+
+  const deleteImmunisation = useMutation({
+    mutationFn: async (immunisationId: string) => {
+      await api.delete(`/api/patients/${id}/immunisations/${immunisationId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+      setModal({ type: 'none' })
+    },
+  })
+
+  const deleteLabResult = useMutation({
+    mutationFn: async (observationId: string) => {
+      await api.delete(`/api/patients/${id}/observations/${observationId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+      setModal({ type: 'none' })
+    },
+  })
+
+  const deleteAllergy = useMutation({
+    mutationFn: async (allergyId: string) => {
+      await api.delete(`/api/patients/${id}/allergies/${allergyId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+      setModal({ type: 'none' })
+    },
+  })
+
+  const stopMedication = useMutation({
+    mutationFn: async (medicationId: string) => {
+      await api.delete(`/api/patients/${id}/medications/${medicationId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+      setModal({ type: 'none' })
+    },
+  })
+
+  const createEncounter = useMutation({
+    mutationFn: async () => {
+      const res = await api.post<{ data: { id: string } }>(`/api/patients/${id}/encounters`, {
+        type: 'Office Visit',
+        encounterClass: 'AMB',
+        providerId: 'current-user',
+        startTime: new Date().toISOString(),
+      })
+      return res.data.data
+    },
+    onSuccess: (enc) => {
+      navigate(`/patients/${id}/encounters/${enc.id}`)
+    },
+  })
+
+  function handleSaved() {
+    queryClient.invalidateQueries({ queryKey: ['patient-chart', id] })
+  }
 
   // ── Loading skeleton ───────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header skeleton */}
         <div className="border-b border-gray-200 bg-white px-6 py-3">
           <div className="flex items-center gap-4">
             <Skeleton className="h-10 w-10 rounded-full" />
@@ -231,7 +392,6 @@ export default function PatientChartPage() {
             </div>
           </div>
         </div>
-        {/* Body skeleton */}
         <div className="flex flex-1 gap-4 overflow-auto p-6">
           <div className="w-56 flex-shrink-0 space-y-4">
             <CardSkeleton lines={4} />
@@ -277,375 +437,606 @@ export default function PatientChartPage() {
 
   // ── Full chart ─────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* ── Sticky patient context header ──────────────────────────────────── */}
-      <div className="flex-shrink-0">
-        {/* Back navigation */}
-        <div className="flex items-center gap-2 bg-white border-b border-gray-100 px-6 py-1.5">
-          <button
-            onClick={() => navigate('/patients')}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
-            aria-label="Back to patient list"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Patients
-          </button>
-          <span className="text-gray-300 text-xs">/</span>
-          <span className="text-xs text-gray-600 font-medium">
-            {chart.patient.firstName} {chart.patient.lastName}
-          </span>
+    <>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* ── Sticky patient context header ────────────────────────────────── */}
+        <div className="flex-shrink-0">
+          <div className="flex items-center gap-2 bg-white border-b border-gray-100 px-6 py-1.5">
+            <button
+              onClick={() => navigate('/patients')}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+              aria-label="Back to patient list"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Patients
+            </button>
+            <span className="text-gray-300 text-xs">/</span>
+            <span className="text-xs text-gray-600 font-medium">
+              {chart.patient.firstName} {chart.patient.lastName}
+            </span>
+          </div>
+
+          <PatientHeader patient={chart.patient} allergyCount={chart.allergies.length} />
+          <OutstandingActionsBar actions={chart.outstandingActions} />
         </div>
 
-        <PatientHeader patient={chart.patient} allergyCount={chart.allergies.length} />
+        {/* ── Chart body: 3-column grid ──────────────────────────────────── */}
+        <div className="flex flex-1 gap-4 overflow-auto p-5">
 
-        {/* Outstanding actions — only if counts > 0 */}
-        <OutstandingActionsBar actions={chart.outstandingActions} />
-      </div>
+          {/* ── Left sidebar: Problems + Allergies ─────────────────────── */}
+          <aside className="flex w-56 flex-shrink-0 flex-col gap-4" aria-label="Problem list and allergies">
 
-      {/* ── Chart body: 3-column grid ──────────────────────────────────────── */}
-      <div className="flex flex-1 gap-4 overflow-auto p-5">
-
-        {/* ── Left sidebar: Problems + Allergies ─────────────────────────── */}
-        <aside className="flex w-56 flex-shrink-0 flex-col gap-4" aria-label="Problem list and allergies">
-
-          {/* Active Problems */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<AlertCircle className="h-3.5 w-3.5" />}
-                  title="Active Problems"
-                  count={chart.activeProblems.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.activeProblems.length === 0 ? (
-                <NoneRecorded label="active problems" />
-              ) : (
-                <ul className="space-y-2" role="list" aria-label="Active problems">
-                  {chart.activeProblems.map((problem) => (
-                    <li key={problem.id} className="text-xs">
-                      <p className="font-medium text-gray-800 leading-snug">{problem.display}</p>
-                      <div className="flex flex-wrap items-center gap-1 mt-0.5">
-                        {problem.code && (
-                          <span className="text-gray-400 font-mono text-[10px]">{problem.code}</span>
-                        )}
-                        {problem.severity && (
-                          <Badge
-                            variant={
-                              problem.severity === 'severe'
-                                ? 'destructive'
-                                : problem.severity === 'moderate'
-                                ? 'warning'
-                                : 'secondary'
-                            }
-                            className="text-[10px] px-1 py-0"
-                          >
-                            {problem.severity}
-                          </Badge>
-                        )}
-                        {problem.onsetDate && (
-                          <span className="text-gray-400 text-[10px]">
-                            since {formatDate(problem.onsetDate)}
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Allergies */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<AlertCircle className="h-3.5 w-3.5 text-red-500" />}
-                  title="Allergies"
-                  count={chart.allergies.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.allergies.length === 0 ? (
-                <p className="py-2 text-xs text-green-600 font-medium">No known allergies</p>
-              ) : (
-                <ul className="space-y-2" role="list" aria-label="Allergies">
-                  {chart.allergies.map((allergy) => (
-                    <li key={allergy.id} className="text-xs">
-                      <div className="flex items-start justify-between gap-1">
-                        <p className="font-medium text-gray-800 leading-snug">{allergy.substance}</p>
-                        {allergy.criticality && (
-                          <Badge
-                            variant={criticalityVariant(allergy.criticality)}
-                            className="text-[10px] px-1 py-0 flex-shrink-0"
-                          >
-                            {allergy.criticality}
-                          </Badge>
-                        )}
-                      </div>
-                      {allergy.reaction && (
-                        <p className="text-gray-500 mt-0.5">{allergy.reaction}</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </aside>
-
-        {/* ── Main column: Vitals + Labs + Notes ──────────────────────────── */}
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-
-          {/* Recent Vitals */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<Activity className="h-3.5 w-3.5" />}
-                  title="Recent Vitals"
-                />
-              </CardTitle>
-              {chart.recentVitals && (
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  Recorded {formatDateTime(chart.recentVitals.recordedAt)}
-                </p>
-              )}
-            </CardHeader>
-            <CardContent>
-              {chart.recentVitals ? (
-                <VitalsGrid vitals={chart.recentVitals} />
-              ) : (
-                <NoneRecorded label="recent vitals" />
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recent Lab Results */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<FlaskConical className="h-3.5 w-3.5" />}
-                  title="Recent Lab Results"
-                  count={chart.recentResults.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.recentResults.length === 0 ? (
-                <NoneRecorded label="recent lab results" />
-              ) : (
-                <div className="overflow-x-auto -mx-1">
-                  <table
-                    className="w-full text-xs"
-                    aria-label="Recent lab results"
-                  >
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="px-1 py-1.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-                          Test
-                        </th>
-                        <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-                          Result
-                        </th>
-                        <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">
-                          Reference
-                        </th>
-                        <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {chart.recentResults.map((result) => (
-                        <tr
-                          key={result.id}
-                          className="border-b border-gray-50 last:border-0"
-                        >
-                          <td className="px-1 py-2 font-medium text-gray-800">
-                            {result.name}
-                          </td>
-                          <td
-                            className={cn(
-                              'px-1 py-2 text-right font-semibold tabular-nums',
-                              result.isAbnormal ? 'text-red-600' : 'text-gray-800'
-                            )}
-                            aria-label={`${result.name}: ${result.value}${result.unit ? ' ' + result.unit : ''}${result.isAbnormal ? ' — abnormal' : ''}`}
-                          >
-                            {result.value}
-                            {result.unit && (
-                              <span className="ml-0.5 text-[10px] font-normal text-gray-500">
-                                {result.unit}
-                              </span>
-                            )}
-                            {result.isAbnormal && (
-                              <span
-                                className="ml-1 text-[9px] font-bold text-red-500 uppercase"
-                                aria-hidden="true"
-                              >
-                                ↑
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-1 py-2 text-right text-gray-400 hidden sm:table-cell">
-                            {result.referenceRange ?? '—'}
-                          </td>
-                          <td className="px-1 py-2 text-right text-gray-500">
-                            {formatDate(result.resultDate)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recent Clinical Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<FileText className="h-3.5 w-3.5" />}
-                  title="Recent Notes"
-                  count={chart.recentNotes.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.recentNotes.length === 0 ? (
-                <NoneRecorded label="clinical notes" />
-              ) : (
-                <ul className="space-y-3" role="list" aria-label="Recent clinical notes">
-                  {chart.recentNotes.map((note) => (
-                    <li
-                      key={note.id}
-                      className="rounded-md border border-gray-100 bg-gray-50 p-3 text-xs"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <span className="font-semibold text-gray-800 capitalize">
-                            {note.type.replace(/-/g, ' ')}
-                          </span>
-                          <span className="mx-1.5 text-gray-300">·</span>
-                          <span className="text-gray-500">{note.authorName}</span>
+            {/* Active Problems */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<AlertCircle className="h-3.5 w-3.5" />}
+                    title="Active Problems"
+                    count={chart.activeProblems.length}
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.activeProblems.length === 0 ? (
+                  <NoneRecorded label="active problems" />
+                ) : (
+                  <ul className="space-y-2" role="list" aria-label="Active problems">
+                    {chart.activeProblems.map((problem) => (
+                      <li key={problem.id} className="text-xs">
+                        <p className="font-medium text-gray-800 leading-snug">{problem.display}</p>
+                        <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                          {problem.code && (
+                            <span className="text-gray-400 font-mono text-[10px]">{problem.code}</span>
+                          )}
+                          {problem.severity && (
+                            <Badge
+                              variant={
+                                problem.severity === 'severe'
+                                  ? 'destructive'
+                                  : problem.severity === 'moderate'
+                                  ? 'warning'
+                                  : 'secondary'
+                              }
+                              className="text-[10px] px-1 py-0"
+                            >
+                              {problem.severity}
+                            </Badge>
+                          )}
+                          {problem.onsetDate && (
+                            <span className="text-gray-400 text-[10px]">
+                              since {formatDate(problem.onsetDate)}
+                            </span>
+                          )}
                         </div>
-                        <span className="text-gray-400 flex-shrink-0">{formatDate(note.date)}</span>
-                      </div>
-                      <p className="text-gray-600 leading-relaxed line-clamp-3">{note.summary}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* ── Right sidebar: Medications + Immunisations + Appointments ─── */}
-        <aside className="flex w-52 flex-shrink-0 flex-col gap-4" aria-label="Medications, immunisations, and appointments">
+            {/* Allergies */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<AlertCircle className="h-3.5 w-3.5 text-red-500" />}
+                    title="Allergies"
+                    count={chart.allergies.length}
+                    onAdd={() => setModal({ type: 'allergy-add' })}
+                    addLabel="Add allergy"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.allergies.length === 0 ? (
+                  <p className="py-2 text-xs text-green-600 font-medium">No known allergies</p>
+                ) : (
+                  <ul className="space-y-2" role="list" aria-label="Allergies">
+                    {chart.allergies.map((allergy) => (
+                      <li key={allergy.id} className="group text-xs">
+                        <div className="flex items-start justify-between gap-1">
+                          <p className="font-medium text-gray-800 leading-snug">{allergy.substance}</p>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {allergy.criticality && (
+                              <Badge
+                                variant={criticalityVariant(allergy.criticality)}
+                                className="text-[10px] px-1 py-0"
+                              >
+                                {allergy.criticality}
+                              </Badge>
+                            )}
+                            <RowActions
+                              onEdit={() => setModal({ type: 'allergy-edit', item: allergy })}
+                              onDelete={() => setModal({ type: 'allergy-delete', item: allergy })}
+                              editLabel={`Edit allergy: ${allergy.substance}`}
+                              deleteLabel={`Remove allergy: ${allergy.substance}`}
+                            />
+                          </div>
+                        </div>
+                        {allergy.reaction && (
+                          <p className="text-gray-500 mt-0.5">{allergy.reaction}</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </aside>
 
-          {/* Current Medications */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<Pill className="h-3.5 w-3.5" />}
-                  title="Medications"
-                  count={chart.medications.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.medications.length === 0 ? (
-                <NoneRecorded label="active medications" />
-              ) : (
-                <ul className="space-y-2.5" role="list" aria-label="Current medications">
-                  {chart.medications.map((med) => (
-                    <li key={med.id} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
-                      <p className="font-semibold text-gray-800 leading-snug">{med.name}</p>
-                      {(med.dose || med.frequency) && (
-                        <p className="text-gray-500 mt-0.5">
-                          {med.dose}
-                          {med.dose && med.frequency && ' · '}
-                          {med.frequency}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
+          {/* ── Main column: Vitals + Labs + Notes ──────────────────────── */}
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
 
-          {/* Immunisations */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<Syringe className="h-3.5 w-3.5" />}
-                  title="Immunisations"
-                  count={chart.immunisations.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.immunisations.length === 0 ? (
-                <NoneRecorded label="immunisation records" />
-              ) : (
-                <ul className="space-y-2" role="list" aria-label="Immunisation history">
-                  {chart.immunisations.map((imm) => (
-                    <li key={imm.id} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
-                      <p className="font-medium text-gray-800 leading-snug">{imm.vaccine}</p>
-                      <p className="text-gray-400 mt-0.5">{formatDate(imm.dateGiven)}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
+            {/* Recent Vitals */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<Activity className="h-3.5 w-3.5" />}
+                    title="Recent Vitals"
+                  />
+                </CardTitle>
+                {chart.recentVitals && (
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    Recorded {formatDateTime(chart.recentVitals.recordedAt)}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                {chart.recentVitals ? (
+                  <VitalsGrid vitals={chart.recentVitals} />
+                ) : (
+                  <NoneRecorded label="recent vitals" />
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Upcoming Appointments */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <SectionHeader
-                  icon={<Calendar className="h-3.5 w-3.5" />}
-                  title="Upcoming"
-                  count={chart.upcomingAppointments.length}
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chart.upcomingAppointments.length === 0 ? (
-                <NoneRecorded label="upcoming appointments" />
-              ) : (
-                <ul className="space-y-2.5" role="list" aria-label="Upcoming appointments">
-                  {chart.upcomingAppointments.map((appt) => (
-                    <li key={appt.id} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
-                      <p className="font-medium text-gray-800 capitalize leading-snug">
-                        {appt.type.replace(/-/g, ' ')}
-                      </p>
-                      <p className="text-gray-500 mt-0.5">{formatDateTime(appt.date)}</p>
-                      <Badge
-                        variant="secondary"
-                        className="mt-1 text-[10px] px-1.5 py-0 font-medium"
+            {/* Recent Encounters */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<PenLine className="h-3.5 w-3.5" />}
+                    title="Recent Encounters"
+                    count={chart.recentEncounters.length}
+                    onAdd={() => createEncounter.mutate()}
+                    addLabel="Start new encounter"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {createEncounter.isPending && (
+                  <p className="py-2 text-xs text-blue-500">Opening new encounter…</p>
+                )}
+                {chart.recentEncounters.length === 0 ? (
+                  <div>
+                    <NoneRecorded label="encounter notes" />
+                    <button
+                      onClick={() => createEncounter.mutate()}
+                      disabled={createEncounter.isPending}
+                      className="mt-2 flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Start first encounter
+                    </button>
+                  </div>
+                ) : (
+                  <ul className="space-y-2" role="list" aria-label="Recent encounters">
+                    {chart.recentEncounters.map((enc) => (
+                      <li key={enc.id}>
+                        <button
+                          onClick={() => navigate(`/patients/${id}/encounters/${enc.id}`)}
+                          className="group w-full rounded-md border border-gray-100 bg-gray-50 p-3 text-left transition-colors hover:border-blue-200 hover:bg-blue-50"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-gray-800 leading-snug truncate">
+                                {enc.chiefComplaint ?? enc.type ?? 'Office Visit'}
+                              </p>
+                              {enc.startTime && (
+                                <p className="mt-0.5 text-[10px] text-gray-400">
+                                  {formatDateTime(enc.startTime)}
+                                </p>
+                              )}
+                              {enc.providerName && (
+                                <p className="mt-0.5 text-[10px] text-gray-400">{enc.providerName}</p>
+                              )}
+                            </div>
+                            <span className={`inline-flex flex-shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+                              enc.signedAt
+                                ? 'bg-green-100 text-green-700'
+                                : enc.status === 'in-progress'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-gray-100 text-gray-500'
+                            }`}>
+                              {enc.signedAt
+                                ? <><CheckCircle className="h-2.5 w-2.5" /> Signed</>
+                                : enc.status === 'in-progress'
+                                ? <><Clock className="h-2.5 w-2.5" /> In Progress</>
+                                : enc.status}
+                            </span>
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Lab Results */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<FlaskConical className="h-3.5 w-3.5" />}
+                    title="Recent Lab Results"
+                    count={chart.recentResults.length}
+                    onAdd={() => setModal({ type: 'lab-add' })}
+                    addLabel="Add lab result"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.recentResults.length === 0 ? (
+                  <NoneRecorded label="recent lab results" />
+                ) : (
+                  <div className="overflow-x-auto -mx-1">
+                    <table
+                      className="w-full text-xs"
+                      aria-label="Recent lab results"
+                    >
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          <th className="px-1 py-1.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                            Test
+                          </th>
+                          <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                            Result
+                          </th>
+                          <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">
+                            Reference
+                          </th>
+                          <th className="px-1 py-1.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                            Date
+                          </th>
+                          <th className="px-1 py-1.5 w-14" aria-label="Actions" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chart.recentResults.map((result) => (
+                          <tr
+                            key={result.id}
+                            className="group border-b border-gray-50 last:border-0"
+                          >
+                            <td className="px-1 py-2 font-medium text-gray-800">
+                              {result.name}
+                            </td>
+                            <td
+                              className={cn(
+                                'px-1 py-2 text-right font-semibold tabular-nums',
+                                result.isAbnormal ? 'text-red-600' : 'text-gray-800'
+                              )}
+                              aria-label={`${result.name}: ${result.value}${result.unit ? ' ' + result.unit : ''}${result.isAbnormal ? ' — abnormal' : ''}`}
+                            >
+                              {result.value}
+                              {result.unit && (
+                                <span className="ml-0.5 text-[10px] font-normal text-gray-500">
+                                  {result.unit}
+                                </span>
+                              )}
+                              {result.isAbnormal && (
+                                <span
+                                  className="ml-1 text-[9px] font-bold text-red-500 uppercase"
+                                  aria-hidden="true"
+                                >
+                                  ↑
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-1 py-2 text-right text-gray-400 hidden sm:table-cell">
+                              {result.referenceRange ?? '—'}
+                            </td>
+                            <td className="px-1 py-2 text-right text-gray-500">
+                              {formatDate(result.resultDate)}
+                            </td>
+                            <td className="px-1 py-2">
+                              <RowActions
+                                onEdit={() => setModal({ type: 'lab-edit', item: result })}
+                                onDelete={() => setModal({ type: 'lab-delete', item: result })}
+                                editLabel={`Edit lab result: ${result.name}`}
+                                deleteLabel={`Delete lab result: ${result.name}`}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Clinical Notes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<FileText className="h-3.5 w-3.5" />}
+                    title="Recent Notes"
+                    count={chart.recentNotes.length}
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.recentNotes.length === 0 ? (
+                  <NoneRecorded label="clinical notes" />
+                ) : (
+                  <ul className="space-y-3" role="list" aria-label="Recent clinical notes">
+                    {chart.recentNotes.map((note) => (
+                      <li
+                        key={note.id}
+                        className="rounded-md border border-gray-100 bg-gray-50 p-3 text-xs"
                       >
-                        {appt.status}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </aside>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <span className="font-semibold text-gray-800 capitalize">
+                              {note.type.replace(/-/g, ' ')}
+                            </span>
+                            <span className="mx-1.5 text-gray-300">·</span>
+                            <span className="text-gray-500">{note.authorName}</span>
+                          </div>
+                          <span className="text-gray-400 flex-shrink-0">{formatDate(note.date)}</span>
+                        </div>
+                        <p className="text-gray-600 leading-relaxed line-clamp-3">{note.summary}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* ── Right sidebar: Medications + Immunisations + Appointments ─ */}
+          <aside className="flex w-52 flex-shrink-0 flex-col gap-4" aria-label="Medications, immunisations, and appointments">
+
+            {/* Current Medications */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<Pill className="h-3.5 w-3.5" />}
+                    title="Medications"
+                    count={chart.medications.length}
+                    onAdd={() => setModal({ type: 'medication-add' })}
+                    addLabel="Add medication"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.medications.length === 0 ? (
+                  <NoneRecorded label="active medications" />
+                ) : (
+                  <ul className="space-y-2.5" role="list" aria-label="Current medications">
+                    {chart.medications.map((med) => (
+                      <li key={med.id} className="group text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+                        <div className="flex items-start justify-between gap-1">
+                          <p className="font-semibold text-gray-800 leading-snug">{med.name}</p>
+                          <RowActions
+                            onEdit={() => setModal({ type: 'medication-edit', item: med })}
+                            onDelete={() => setModal({ type: 'medication-delete', item: med })}
+                            editLabel={`Edit medication: ${med.name}`}
+                            deleteLabel={`Stop medication: ${med.name}`}
+                          />
+                        </div>
+                        {(med.dose || med.frequency) && (
+                          <p className="text-gray-500 mt-0.5">
+                            {med.dose}
+                            {med.dose && med.frequency && ' · '}
+                            {med.frequency}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Immunisations */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<Syringe className="h-3.5 w-3.5" />}
+                    title="Immunisations"
+                    count={chart.immunisations.length}
+                    onAdd={() => setModal({ type: 'immunisation-add' })}
+                    addLabel="Add immunisation"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.immunisations.length === 0 ? (
+                  <NoneRecorded label="immunisation records" />
+                ) : (
+                  <ul className="space-y-2" role="list" aria-label="Immunisation history">
+                    {chart.immunisations.map((imm) => (
+                      <li key={imm.id} className="group text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+                        <div className="flex items-start justify-between gap-1">
+                          <p className="font-medium text-gray-800 leading-snug">{imm.vaccine}</p>
+                          <RowActions
+                            onEdit={() => setModal({ type: 'immunisation-edit', item: imm })}
+                            onDelete={() => setModal({ type: 'immunisation-delete', item: imm })}
+                            editLabel={`Edit immunisation: ${imm.vaccine}`}
+                            deleteLabel={`Delete immunisation: ${imm.vaccine}`}
+                          />
+                        </div>
+                        <p className="text-gray-400 mt-0.5">{formatDate(imm.dateGiven)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Upcoming Appointments */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <SectionHeader
+                    icon={<Calendar className="h-3.5 w-3.5" />}
+                    title="Upcoming"
+                    count={chart.upcomingAppointments.length}
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {chart.upcomingAppointments.length === 0 ? (
+                  <NoneRecorded label="upcoming appointments" />
+                ) : (
+                  <ul className="space-y-2.5" role="list" aria-label="Upcoming appointments">
+                    {chart.upcomingAppointments.map((appt) => (
+                      <li key={appt.id} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+                        <p className="font-medium text-gray-800 capitalize leading-snug">
+                          {appt.type.replace(/-/g, ' ')}
+                        </p>
+                        <p className="text-gray-500 mt-0.5">{formatDateTime(appt.date)}</p>
+                        <Badge
+                          variant="secondary"
+                          className="mt-1 text-[10px] px-1.5 py-0 font-medium"
+                        >
+                          {appt.status}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
       </div>
-    </div>
+
+      {/* ── Modals ─────────────────────────────────────────────────────────── */}
+
+      {modal.type === 'immunisation-add' && (
+        <ImmunisationModal
+          patientId={id!}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'immunisation-edit' && (
+        <ImmunisationModal
+          patientId={id!}
+          immunisation={modal.item}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'immunisation-delete' && (
+        <DeleteConfirmModal
+          title="Delete Immunisation"
+          message={`Are you sure you want to delete the ${modal.item.vaccine} immunisation record from ${formatDate(modal.item.dateGiven)}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          isDestructive
+          onConfirm={() => deleteImmunisation.mutate(modal.item.id)}
+          onCancel={() => setModal({ type: 'none' })}
+          isLoading={deleteImmunisation.isPending}
+        />
+      )}
+
+      {modal.type === 'lab-add' && (
+        <LabResultModal
+          patientId={id!}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'lab-edit' && (
+        <LabResultModal
+          patientId={id!}
+          result={modal.item}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'lab-delete' && (
+        <DeleteConfirmModal
+          title="Delete Lab Result"
+          message={`Are you sure you want to delete the ${modal.item.name} result from ${formatDate(modal.item.resultDate)}? This action cannot be undone.`}
+          confirmLabel="Delete"
+          isDestructive
+          onConfirm={() => deleteLabResult.mutate(modal.item.id)}
+          onCancel={() => setModal({ type: 'none' })}
+          isLoading={deleteLabResult.isPending}
+        />
+      )}
+
+      {modal.type === 'allergy-add' && (
+        <AllergyModal
+          patientId={id!}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'allergy-edit' && (
+        <AllergyModal
+          patientId={id!}
+          allergy={modal.item}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'allergy-delete' && (
+        <DeleteConfirmModal
+          title="Remove Allergy"
+          message={`Are you sure you want to remove ${modal.item.substance} from this patient's allergy list? This action cannot be undone.`}
+          confirmLabel="Remove"
+          isDestructive
+          onConfirm={() => deleteAllergy.mutate(modal.item.id)}
+          onCancel={() => setModal({ type: 'none' })}
+          isLoading={deleteAllergy.isPending}
+        />
+      )}
+
+      {modal.type === 'medication-add' && (
+        <MedicationModal
+          patientId={id!}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'medication-edit' && (
+        <MedicationModal
+          patientId={id!}
+          medication={modal.item}
+          onClose={() => setModal({ type: 'none' })}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {modal.type === 'medication-delete' && (
+        <DeleteConfirmModal
+          title="Stop Medication"
+          message={`Are you sure you want to stop ${modal.item.name}? This will mark the medication as stopped and record the discontinuation date. The medication will remain in the patient's history for audit purposes.`}
+          confirmLabel="Stop Medication"
+          isDestructive
+          onConfirm={() => stopMedication.mutate(modal.item.id)}
+          onCancel={() => setModal({ type: 'none' })}
+          isLoading={stopMedication.isPending}
+        />
+      )}
+    </>
   )
 }

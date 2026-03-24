@@ -6,6 +6,9 @@ import jwt from '@fastify/jwt'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from './lib/prisma'
 import { patientRoutes } from './routes/patients'
+import { clinicalRoutes } from './routes/clinical'
+import { encounterRoutes } from './routes/encounters'
+import { emrInternalRoutes } from './routes/internal'
 
 const PORT = parseInt(process.env.EMR_PORT ?? '3002', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
@@ -64,8 +67,8 @@ async function bootstrap() {
 
   // ── JWT auth preHandler for all /api routes ───────────────────────────────
   fastify.addHook('preHandler', async (request, reply) => {
-    // Skip auth for health endpoints
-    if (request.url === '/health' || request.url === '/ready') return
+    // Skip auth for health endpoints and internal service routes
+    if (request.url === '/health' || request.url === '/ready' || request.url.startsWith('/internal')) return
 
     const correlationId = (request.headers['x-correlation-id'] as string) ?? uuidv4()
     const authHeader = request.headers['authorization']
@@ -96,6 +99,9 @@ async function bootstrap() {
 
   // ── Routes ────────────────────────────────────────────────────────────────
   await fastify.register(patientRoutes)
+  await fastify.register(clinicalRoutes)
+  await fastify.register(encounterRoutes)
+  await fastify.register(emrInternalRoutes)
 
   // ── Health endpoints ──────────────────────────────────────────────────────
   fastify.get('/health', async (_request, reply) => {

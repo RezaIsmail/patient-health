@@ -486,6 +486,15 @@ export async function patientRoutes(fastify: FastifyInstance) {
             orderBy: { createdAt: 'desc' },
             take: 3,
           },
+          encounters: {
+            orderBy: { startTime: 'desc' },
+            take: 5,
+            select: {
+              id: true, status: true, encounterClass: true, type: true,
+              reasonDisplay: true, startTime: true, providerName: true,
+              chiefComplaint: true, signedAt: true, signedByName: true,
+            },
+          },
         },
       })
 
@@ -493,16 +502,17 @@ export async function patientRoutes(fastify: FastifyInstance) {
         return reply.status(404).send(buildError(404, 'Not Found', 'Patient not found', correlationId))
       }
 
-      // Fetch recent lab results separately (different category filter)
-      // This is still a single extra query — not N+1
-      const labResults = await prisma.observation.findMany({
-        where: {
-          patientId: id,
-          category: 'laboratory',
-        },
-        orderBy: { effectiveAt: 'desc' },
-        take: 3,
-      })
+      // Fetch recent lab results and outstanding action counts in parallel
+      const [labResults, unreviewedResultCount] = await Promise.all([
+        prisma.observation.findMany({
+          where: { patientId: id, category: 'laboratory' },
+          orderBy: { effectiveAt: 'desc' },
+          take: 3,
+        }),
+        prisma.observation.count({
+          where: { patientId: id, category: 'laboratory', isAbnormal: true, reviewedAt: null },
+        }),
+      ])
 
       // Audit: HIPAA requires logging every access to patient clinical data
       writeAuditLog({
@@ -602,8 +612,19 @@ export async function patientRoutes(fastify: FastifyInstance) {
           type: d.type,
           authorName: d.authorName,
           date: d.createdAt.toISOString().slice(0, 10),
-          // First 200 chars of content as summary — no PII in API layer
           summary: d.content.slice(0, 200),
+        })),
+        recentEncounters: patient.encounters.map((enc) => ({
+          id: enc.id,
+          status: enc.status,
+          encounterClass: enc.encounterClass,
+          type: enc.type ?? undefined,
+          reasonDisplay: enc.reasonDisplay ?? undefined,
+          startTime: enc.startTime?.toISOString(),
+          providerName: enc.providerName ?? undefined,
+          chiefComplaint: enc.chiefComplaint ?? undefined,
+          signedAt: enc.signedAt?.toISOString(),
+          signedByName: enc.signedByName ?? undefined,
         })),
         upcomingAppointments: patient.appointments.map((a) => ({
           id: a.id,
@@ -618,12 +639,11 @@ export async function patientRoutes(fastify: FastifyInstance) {
           dateGiven: i.occurrenceDate.toISOString().slice(0, 10),
           lotNumber: i.lotNumber ?? undefined,
         })),
-        // Phase 2: these will be real counts from orders/results/referrals tables
         outstandingActions: {
-          unsignedOrders: 0,
-          pendingReferrals: 0,
-          unreviewedResults: 0,
-          careGaps: 0,
+          unsignedOrders: 0, // Phase 2: CPOE orders table
+          pendingReferrals: 0, // Phase 2: referrals table
+          unreviewedResults: unreviewedResultCount,
+          careGaps: 0, // Phase 2: via CRM care gap sync
         },
       }
 

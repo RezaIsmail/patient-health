@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,6 +22,7 @@ model Patient {
   email          String?
   photoUrl       String?
   isActive       Boolean  @default(true)
+  adminMemberId  String?  @unique // link back to Admin service Member record
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -39,6 +41,7 @@ model Patient {
 
   @@index([lastName, firstName])
   @@index([mrn])
+  @@index([adminMemberId])
   @@map("patients")
 }
 
@@ -162,15 +165,18 @@ model Observation {
   valueString        String?
   referenceRangeLow  Float?
   referenceRangeHigh Float?
-  isAbnormal         Boolean  @default(false)
-  status             String   @default("final")
+  isAbnormal         Boolean   @default(false)
+  status             String    @default("final")
   effectiveAt        DateTime
   recordedBy         String
+  reviewedAt         DateTime? // set when a provider acknowledges the result in inbox
+  reviewedBy         String?
 
   patient   Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
   encounter Encounter? @relation(fields: [encounterId], references: [id])
 
   @@index([patientId, category, effectiveAt])
+  @@index([isAbnormal, reviewedAt])
   @@map("observations")
 }
 
@@ -198,7 +204,7 @@ model Immunisation {
 model Encounter {
   id             String    @id @default(uuid())
   patientId      String
-  status         String    @default("planned")
+  status         String    @default("in-progress") // planned, in-progress, finished, cancelled
   encounterClass String    @default("AMB") // AMB=ambulatory, IMP=inpatient, VR=virtual
   type           String?
   reasonCode     String?
@@ -206,18 +212,29 @@ model Encounter {
   startTime      DateTime?
   endTime        DateTime?
   providerId     String
+  providerName   String?   // denormalised for display without provider service join
   locationId     String?
-  notes          String?
+  notes          String?   // free-text addendum notes
+  // ── SOAP note fields ───────────────────────────────────────────────────────
+  chiefComplaint String?
+  subjective     String?   @db.Text // HPI, history of present illness, ROS
+  objective      String?   @db.Text // physical examination findings
+  assessment     String?   @db.Text // diagnoses, ICD-10 codes and impressions
+  plan           String?   @db.Text // treatment plan, orders, follow-up instructions
+  signedAt       DateTime?
+  signedBy       String?   // userId of signing provider
+  signedByName   String?   // denormalised name
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  patient     Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  conditions  Condition[]
-  medications MedicationRequest[]
+  patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  conditions   Condition[]
+  medications  MedicationRequest[]
   observations Observation[]
-  documents   ClinicalDocument[]
+  documents    ClinicalDocument[]
 
   @@index([patientId, startTime])
+  @@index([providerId, status])
   @@map("encounters")
 }
 

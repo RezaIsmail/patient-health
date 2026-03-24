@@ -139,6 +139,7 @@ export interface PatientChartDto {
     date: string
     summary: string
   }>
+  recentEncounters: EncounterSummary[]
   upcomingAppointments: Array<{
     id: string
     date: string
@@ -158,6 +159,70 @@ export interface PatientChartDto {
     unreviewedResults: number
     careGaps: number
   }
+}
+
+// ─── Encounter / SOAP note types ──────────────────────────────────────────────
+
+export interface EncounterSummary {
+  id: string
+  status: string
+  encounterClass: string
+  type?: string
+  reasonDisplay?: string
+  startTime?: string
+  providerName?: string
+  chiefComplaint?: string
+  signedAt?: string
+  signedByName?: string
+}
+
+export interface EncounterDetailDto extends EncounterSummary {
+  endTime?: string
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateEncounterDto {
+  type?: string
+  reasonDisplay?: string
+  reasonCode?: string
+  encounterClass?: 'AMB' | 'IMP' | 'VR'
+  startTime?: string
+  providerId: string
+  providerName?: string
+  chiefComplaint?: string
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+}
+
+export interface UpdateEncounterDto {
+  status?: string
+  type?: string
+  chiefComplaint?: string
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+  notes?: string
+  endTime?: string
+}
+
+export interface InboxItemDto {
+  id: string
+  itemType: 'unsigned_encounter' | 'abnormal_result'
+  patientId: string
+  patientName: string
+  mrn: string
+  summary: string
+  createdAt: string
+  severity?: 'normal' | 'abnormal' | 'critical'
 }
 
 // ─── Auth API types ───────────────────────────────────────────────────────────
@@ -188,4 +253,95 @@ export type UserRole = 'physician' | 'app' | 'nurse' | 'front_desk' | 'billing' 
 
 export interface PatientSearchParams extends PaginationParams {
   q?: string // name, MRN, or DOB
+}
+
+// ─── CRM API types ────────────────────────────────────────────────────────────
+
+export type ContactStatus = 'lead' | 'prospect' | 'active' | 'inactive' | 'deceased'
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
+export type ReferralStage = 'received' | 'reviewing' | 'authorized' | 'scheduled' | 'completed' | 'declined' | 'cancelled'
+export type ReferralPriority = 'routine' | 'urgent' | 'emergent'
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+export type CareGapStatus = 'open' | 'in_progress' | 'closed' | 'declined'
+export type CampaignStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'cancelled'
+
+export interface CreateContactDto {
+  firstName: string
+  lastName: string
+  preferredName?: string
+  dateOfBirth?: string
+  sex?: 'male' | 'female' | 'unknown' | 'other'
+  phone?: string
+  email?: string
+  status?: ContactStatus
+  source?: 'referral' | 'self-referral' | 'web' | 'partner' | 'import'
+  riskLevel?: RiskLevel
+  sdohFlags?: string[]
+  assignedTo?: string
+  accountId?: string
+  emrPatientId?: string
+  addressLine1?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  notes?: string
+}
+
+export interface CreateReferralDto {
+  contactId: string
+  type: 'inbound' | 'outbound'
+  priority: ReferralPriority
+  reasonDisplay: string
+  reasonCode?: string
+  referringOrgName?: string
+  receivingOrgName?: string
+  dueDate?: string
+  assignedTo?: string
+}
+
+export interface CreateTaskDto {
+  title: string
+  type: 'call' | 'email' | 'follow_up' | 'assessment' | 'authorization' | 'scheduling' | 'care_plan_review' | 'other'
+  priority?: 'low' | 'normal' | 'high' | 'critical'
+  contactId?: string
+  referralId?: string
+  carePlanId?: string
+  assignedTo: string
+  dueDate?: string
+}
+
+export interface CrmDashboardDto {
+  referrals: {
+    pipeline: Array<{ stage: string; count: number }>
+    openTotal: number
+  }
+  tasks: {
+    overdueCount: number
+    myOpenCount: number
+  }
+  contacts: {
+    totalActive: number
+    byRisk: Array<{ riskLevel: string; count: number }>
+  }
+  careGaps: {
+    totalOpen: number
+    byType: Array<{ gapType: string; count: number }>
+  }
+  carePlans: {
+    activeCount: number
+  }
+  campaigns: Array<{
+    id: string
+    name: string
+    type: string
+    status: string
+    sentCount: number
+    deliveryRate: number
+    openRate: number
+    responseRate: number
+  }>
+  myActivity: {
+    tasksCompletedThisWeek: number
+    contactsTouchedThisWeek: number
+  }
 }

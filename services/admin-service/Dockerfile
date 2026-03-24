@@ -1,0 +1,52 @@
+# ── Stage 1: builder ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+COPY package.json ./
+COPY turbo.json ./
+COPY tsconfig.base.json ./
+
+COPY services/admin-service/package.json ./services/admin-service/
+COPY packages/types/package.json ./packages/types/
+
+RUN npm install --workspaces --include-workspace-root
+
+COPY packages/types/ ./packages/types/
+COPY services/admin-service/ ./services/admin-service/
+
+RUN cd packages/types && npm run build
+RUN cd services/admin-service && npx prisma generate
+RUN cd services/admin-service && npm run build
+
+# ── Stage 2: runtime ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS runtime
+
+# Required for Prisma native query engine on Alpine
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Hoisted workspace deps (fastify, zod, prisma, etc. live here)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Compiled service output
+COPY --from=builder /app/services/admin-service/dist ./dist
+
+# Prisma schema (used for migrations / seeding)
+COPY --from=builder /app/services/admin-service/prisma ./prisma
+
+# Prisma generated client with native engine binary.
+# Must live at ./dist/generated/prisma so that dist/lib/prisma.js can resolve
+# require('../generated/prisma') — i.e. /app/dist/lib/../generated/prisma.
+COPY --from=builder /app/services/admin-service/src/generated/prisma ./dist/generated/prisma
+
+COPY --from=builder /app/services/admin-service/package.json ./
+
+EXPOSE 3004
+
+CMD ["node", "dist/index.js"]

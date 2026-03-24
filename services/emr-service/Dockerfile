@@ -1,6 +1,8 @@
 # ── Stage 1: builder ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 COPY package.json ./
@@ -22,13 +24,27 @@ RUN cd services/emr-service && npm run build
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
 
+# Required for Prisma native query engine on Alpine
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Hoisted workspace deps (fastify, zod, prisma, etc. live here)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Compiled service output
 COPY --from=builder /app/services/emr-service/dist ./dist
+
+# Prisma schema (used for migrations / seeding)
 COPY --from=builder /app/services/emr-service/prisma ./prisma
-COPY --from=builder /app/services/emr-service/node_modules ./node_modules
+
+# Prisma generated client with native engine binary.
+# Must live at ./dist/generated/prisma so that dist/lib/prisma.js can resolve
+# require('../generated/prisma') — i.e. /app/dist/lib/../generated/prisma.
+COPY --from=builder /app/services/emr-service/src/generated/prisma ./dist/generated/prisma
+
 COPY --from=builder /app/services/emr-service/package.json ./
 
 EXPOSE 3002
