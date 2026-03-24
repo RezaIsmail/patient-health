@@ -49,4 +49,4 @@ COPY --from=builder /app/services/emr-service/package.json ./
 
 EXPOSE 3002
 
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
