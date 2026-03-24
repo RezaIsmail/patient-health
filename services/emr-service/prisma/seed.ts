@@ -19,6 +19,7 @@ async function main() {
     where: { mrn: 'PH-000001' },
     update: {},
     create: {
+      id: 'emr-patient-sarah-johnson',
       mrn: nextMrn(),
       firstName: 'Sarah',
       lastName: 'Johnson',
@@ -318,6 +319,7 @@ async function main() {
     where: { mrn: 'PH-000002' },
     update: {},
     create: {
+      id: 'emr-patient-james-williams',
       mrn: 'PH-000002',
       firstName: 'James',
       lastName: 'Williams',
@@ -602,6 +604,7 @@ async function main() {
     where: { mrn: 'PH-000003' },
     update: {},
     create: {
+      id: 'emr-patient-emily-chen',
       mrn: 'PH-000003',
       firstName: 'Emily',
       lastName: 'Chen',

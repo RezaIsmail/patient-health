@@ -3,7 +3,9 @@ import { useAuthStore } from './stores/authStore'
 import LoginPage from './pages/LoginPage'
 import PatientsPage from './pages/PatientsPage'
 import PatientChartPage from './pages/PatientChartPage'
+import EncounterDetailPage from './pages/EncounterDetailPage'
 import SchedulePage from './pages/SchedulePage'
+import InboxPage from './pages/InboxPage'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -27,7 +29,9 @@ export default function App() {
         <Route index element={<Navigate to="/patients" replace />} />
         <Route path="patients" element={<PatientsPage />} />
         <Route path="patients/:id" element={<PatientChartPage />} />
+        <Route path="patients/:patientId/encounters/:encounterId" element={<EncounterDetailPage />} />
         <Route path="schedule" element={<SchedulePage />} />
+        <Route path="inbox" element={<InboxPage />} />
       </Route>
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />

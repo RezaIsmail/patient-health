@@ -1,0 +1,172 @@
+name: CI — Admin
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/admin/**'
+      - 'services/admin-service/**'
+      - 'packages/**'
+      - '.github/workflows/ci-admin.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/admin/**'
+      - 'services/admin-service/**'
+      - 'packages/**'
+      - '.github/workflows/ci-admin.yml'
+
+concurrency:
+  group: ci-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Lint, type-check, test, build ─────────────────────────────────────────
+
+  ci:
+    name: Lint · Type-check · Test · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared packages
+        run: npx turbo run build --filter=@patient-health/types --filter=@patient-health/ui
+
+      - name: Lint — admin-service
+        run: npx turbo run lint --filter=admin-service
+
+      - name: Lint — admin (frontend)
+        run: npx turbo run lint --filter=admin
+
+      - name: Type-check — admin-service
+        working-directory: services/admin-service
+        run: npx tsc --noEmit
+
+      - name: Type-check — admin (frontend)
+        working-directory: apps/admin
+        run: npx tsc --noEmit
+
+      - name: Test — admin-service
+        run: npx turbo run test --filter=admin-service
+
+      - name: Test — admin (frontend)
+        run: npx turbo run test --filter=admin
+
+      - name: Build — admin-service
+        run: npx turbo run build --filter=admin-service
+
+      - name: Build — admin (frontend)
+        run: npx turbo run build --filter=admin
+
+  # ── Deploy to staging ─────────────────────────────────────────────────────
+
+  deploy-staging:
+    name: Deploy → Staging
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build & push admin-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: services/admin-service
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/admin-service:staging-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push admin frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/admin
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/admin-frontend:staging-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to staging namespace
+        run: |
+          echo "Deploying admin-service:staging-${{ github.sha }} to staging"
+          # kubectl set image deployment/admin-service admin-service=${{ secrets.REGISTRY_URL }}/admin-service:staging-${{ github.sha }} -n admin-staging
+          # kubectl set image deployment/admin-frontend admin-frontend=${{ secrets.REGISTRY_URL }}/admin-frontend:staging-${{ github.sha }} -n admin-staging
+          # kubectl rollout status deployment/admin-service -n admin-staging --timeout=120s
+          # kubectl rollout status deployment/admin-frontend -n admin-staging --timeout=120s
+
+  # ── Deploy to production ──────────────────────────────────────────────────
+
+  deploy-production:
+    name: Deploy → Production
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build & push admin-service image
+        uses: docker/build-push-action@v5
+        with:
+          context: services/admin-service
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/admin-service:${{ github.sha }}
+            ${{ secrets.REGISTRY_URL }}/admin-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push admin frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/admin
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/admin-frontend:${{ github.sha }}
+            ${{ secrets.REGISTRY_URL }}/admin-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to production namespace
+        run: |
+          echo "Deploying admin-service:${{ github.sha }} to production"
+          # kubectl set image deployment/admin-service admin-service=${{ secrets.REGISTRY_URL }}/admin-service:${{ github.sha }} -n admin-production
+          # kubectl set image deployment/admin-frontend admin-frontend=${{ secrets.REGISTRY_URL }}/admin-frontend:${{ github.sha }} -n admin-production
+          # kubectl rollout status deployment/admin-service -n admin-production --timeout=180s
+          # kubectl rollout status deployment/admin-frontend -n admin-production --timeout=180s

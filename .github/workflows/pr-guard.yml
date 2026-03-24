@@ -1,0 +1,65 @@
+name: PR Guard
+
+# Runs on every PR to main or develop — enforces branch naming,
+# dependency audit, and format checks before product CI gates run.
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: pr-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  branch-name:
+    name: Enforce branch naming
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ "$BRANCH" =~ ^(feature|fix|chore|docs|refactor)/.+ ]]; then
+            echo "Branch name '$BRANCH' is valid."
+          else
+            echo "::error::Branch name '$BRANCH' does not follow the required pattern: feature/<name>, fix/<name>, chore/<name>, docs/<name>, refactor/<name>"
+            exit 1
+          fi
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (fail on high/critical)
+        run: npm audit --audit-level=high
+
+  format:
+    name: Prettier format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npx prettier --check "**/*.{ts,tsx,js,json}"

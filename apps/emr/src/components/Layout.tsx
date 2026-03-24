@@ -13,7 +13,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Patients', to: '/patients', icon: <Users className="h-4 w-4" /> },
   { label: 'Schedule', to: '/schedule', icon: <Calendar className="h-4 w-4" /> },
-  { label: 'Inbox', icon: <Inbox className="h-4 w-4" />, disabled: true },
+  { label: 'Inbox', to: '/inbox', icon: <Inbox className="h-4 w-4" /> },
 ]
 
 export default function Layout() {

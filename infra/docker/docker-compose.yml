@@ -33,8 +33,8 @@ services:
   # ── Backend services ──────────────────────────────────────────────────────────
   auth-service:
     build:
-      context: ../../services/auth-service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/auth-service/Dockerfile
     restart: unless-stopped
     ports:
       - '3001:3001'
@@ -42,21 +42,23 @@ services:
       - ../../.env
     environment:
       NODE_ENV: production
+      AUTH_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_db
+      REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3001/health || exit 1']
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3001/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
 
   emr-service:
     build:
-      context: ../../services/emr-service
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: services/emr-service/Dockerfile
     restart: unless-stopped
     ports:
       - '3002:3002'
@@ -64,13 +66,47 @@ services:
       - ../../.env
     environment:
       NODE_ENV: production
+      EMR_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/emr_db
+      REDIS_URL: redis://redis:6379
+      INTERNAL_SERVICE_TOKEN: dev-internal-secret-change-in-prod
+      EMR_SERVICE_URL: http://emr-service:3002
+      CRM_SERVICE_URL: http://crm-service:3003
+      ADMIN_SERVICE_URL: http://admin-service:3004
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3002/health || exit 1']
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3002/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  crm-service:
+    build:
+      context: ../..
+      dockerfile: services/crm-service/Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    env_file:
+      - ../../.env
+    environment:
+      NODE_ENV: production
+      CRM_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/crm_db
+      REDIS_URL: redis://redis:6379
+      INTERNAL_SERVICE_TOKEN: dev-internal-secret-change-in-prod
+      EMR_SERVICE_URL: http://emr-service:3002
+      CRM_SERVICE_URL: http://crm-service:3003
+      ADMIN_SERVICE_URL: http://admin-service:3004
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3003/health || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -78,8 +114,8 @@ services:
   # ── Frontend ──────────────────────────────────────────────────────────────────
   emr-frontend:
     build:
-      context: ../../apps/emr
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: apps/emr/Dockerfile
     restart: unless-stopped
     ports:
       - '5173:80'
@@ -87,6 +123,60 @@ services:
       auth-service:
         condition: service_healthy
       emr-service:
+        condition: service_healthy
+
+  crm-frontend:
+    build:
+      context: ../..
+      dockerfile: apps/crm/Dockerfile
+    restart: unless-stopped
+    ports:
+      - '5174:80'
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      crm-service:
+        condition: service_healthy
+
+  admin-service:
+    build:
+      context: ../..
+      dockerfile: services/admin-service/Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3004:3004'
+    env_file:
+      - ../../.env
+    environment:
+      NODE_ENV: production
+      ADMIN_DATABASE_URL: postgresql://postgres:postgres@postgres:5432/admin_db
+      REDIS_URL: redis://redis:6379
+      INTERNAL_SERVICE_TOKEN: dev-internal-secret-change-in-prod
+      EMR_SERVICE_URL: http://emr-service:3002
+      CRM_SERVICE_URL: http://crm-service:3003
+      ADMIN_SERVICE_URL: http://admin-service:3004
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3004/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  admin-frontend:
+    build:
+      context: ../..
+      dockerfile: apps/admin/Dockerfile
+    restart: unless-stopped
+    ports:
+      - '5175:80'
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      admin-service:
         condition: service_healthy
 
 volumes:

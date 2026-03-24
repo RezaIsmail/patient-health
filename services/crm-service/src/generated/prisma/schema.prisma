@@ -1,0 +1,412 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("CRM_DATABASE_URL")
+}
+
+// ─── Account ──────────────────────────────────────────────────────────────────
+// Organisations: health systems, clinics, payers, employers, community orgs
+model Account {
+  id              String   @id @default(uuid())
+  name            String
+  type            String   @default("clinic") // health_system, clinic, payer, employer, community_org, other
+  status          String   @default("active") // active, inactive, prospect
+  phone           String?
+  email           String?
+  website         String?
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  country         String   @default("US")
+  parentAccountId String?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  parent   Account?  @relation("AccountHierarchy", fields: [parentAccountId], references: [id])
+  children Account[] @relation("AccountHierarchy")
+  contacts Contact[]
+
+  @@index([name])
+  @@index([type, status])
+  @@map("accounts")
+}
+
+// ─── Contact ──────────────────────────────────────────────────────────────────
+// The central CRM entity — a patient, lead, prospect, or plan member
+model Contact {
+  id             String    @id @default(uuid())
+  firstName      String
+  lastName       String
+  preferredName  String?
+  dateOfBirth    DateTime?
+  sex            String? // male, female, unknown, other
+  genderIdentity String?
+  pronouns       String?
+  phone          String?
+  email          String?
+  language       String?   @default("en")
+  photoUrl       String?
+
+  // CRM classification
+  status    String   @default("lead") // lead, prospect, active, inactive, deceased
+  source    String? // referral, self-referral, web, partner, import
+  riskLevel String   @default("low") // low, medium, high, critical
+  sdohFlags String[] // housing, food, transportation, social_isolation, financial
+
+  // Assignment
+  assignedTo String? // userId of assigned care coordinator
+
+  // External links
+  accountId    String?
+  emrPatientId String? // link to EMR patient record
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String  @default("US")
+
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account         Account?         @relation(fields: [accountId], references: [id])
+  carePlans       CarePlan[]
+  referrals       Referral[]
+  tasks           Task[]
+  careGaps        CareGap[]
+  communications  Communication[]
+  careTeam        CareTeam?
+  campaignMembers CampaignMember[]
+  auditLogs       AuditLog[]
+
+  @@index([lastName, firstName])
+  @@index([status, riskLevel])
+  @@index([assignedTo])
+  @@map("contacts")
+}
+
+// ─── CarePlan ─────────────────────────────────────────────────────────────────
+// Structured care coordination plan linked to a contact (FHIR: CarePlan)
+model CarePlan {
+  id          String    @id @default(uuid())
+  contactId   String
+  title       String
+  description String?   @db.Text
+  status      String    @default("draft") // draft, active, completed, cancelled
+  templateKey String? // reference to a template (chf, diabetes, copd, etc.)
+  startDate   DateTime?
+  endDate     DateTime?
+  assignedTo  String? // userId
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  contact       Contact                @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  problems      CarePlanProblem[]
+  goals         CarePlanGoal[]
+  interventions CarePlanIntervention[]
+  progressNotes CarePlanNote[]
+  tasks         Task[]
+
+  @@index([contactId, status])
+  @@map("care_plans")
+}
+
+model CarePlanProblem {
+  id          String    @id @default(uuid())
+  carePlanId  String
+  description String
+  snomedCode  String?
+  icd10Code   String?
+  status      String    @default("active") // active, resolved
+  onsetDate   DateTime?
+  createdAt   DateTime  @default(now())
+
+  carePlan CarePlan       @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  goals    CarePlanGoal[]
+
+  @@index([carePlanId])
+  @@map("care_plan_problems")
+}
+
+model CarePlanGoal {
+  id           String    @id @default(uuid())
+  carePlanId   String
+  problemId    String?
+  description  String
+  targetDate   DateTime?
+  status       String    @default("in_progress") // in_progress, achieved, not_achieved, cancelled
+  achievedDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  carePlan      CarePlan               @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  problem       CarePlanProblem?       @relation(fields: [problemId], references: [id])
+  interventions CarePlanIntervention[]
+
+  @@index([carePlanId])
+  @@map("care_plan_goals")
+}
+
+model CarePlanIntervention {
+  id          String   @id @default(uuid())
+  carePlanId  String
+  goalId      String?
+  description String
+  type        String   @default("other") // education, referral, medication_adjustment, behavioural, monitoring, other
+  frequency   String? // e.g. "Weekly", "Monthly", "As needed"
+  assignedTo  String? // userId
+  status      String   @default("active") // active, completed, cancelled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  carePlan CarePlan      @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  goal     CarePlanGoal? @relation(fields: [goalId], references: [id])
+
+  @@index([carePlanId])
+  @@map("care_plan_interventions")
+}
+
+model CarePlanNote {
+  id         String   @id @default(uuid())
+  carePlanId String
+  content    String   @db.Text
+  authorId   String
+  authorName String
+  createdAt  DateTime @default(now())
+
+  carePlan CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+
+  @@index([carePlanId])
+  @@map("care_plan_notes")
+}
+
+// ─── CareTeam ─────────────────────────────────────────────────────────────────
+// Multi-disciplinary care team assigned to a contact
+model CareTeam {
+  id        String   @id @default(uuid())
+  contactId String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contact Contact          @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  members CareTeamMember[]
+
+  @@map("care_teams")
+}
+
+model CareTeamMember {
+  id         String    @id @default(uuid())
+  careTeamId String
+  userId     String
+  memberName String
+  role       String    @default("care_coordinator") // care_coordinator, physician, nurse, social_worker, pharmacist, behavioural_health, other
+  isPrimary  Boolean   @default(false)
+  joinedAt   DateTime  @default(now())
+  leftAt     DateTime?
+
+  careTeam CareTeam @relation(fields: [careTeamId], references: [id], onDelete: Cascade)
+
+  @@index([careTeamId])
+  @@map("care_team_members")
+}
+
+// ─── Referral ─────────────────────────────────────────────────────────────────
+// Referral pipeline entity (FHIR: ServiceRequest)
+model Referral {
+  id                  String    @id @default(uuid())
+  referralNumber      String    @unique // auto-generated: REF-YYYYMMDD-NNNN
+  contactId           String
+  type                String    @default("inbound") // inbound, outbound
+  stage               String    @default("received") // received, reviewing, authorized, scheduled, completed, declined, cancelled
+  priority            String    @default("routine") // routine, urgent, emergent
+  referringProvider   String?
+  referringOrgName    String?
+  receivingProvider   String?
+  receivingOrgName    String?
+  reasonCode          String? // ICD-10 or SNOMED
+  reasonDisplay       String
+  authorizationNumber String?
+  dueDate             DateTime?
+  outcome             String? // kept, no_show, patient_cancelled, transferred
+  outcomeNotes        String?   @db.Text
+  assignedTo          String? // userId
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  communications Communication[]
+
+  @@index([contactId, stage])
+  @@index([stage, priority])
+  @@index([createdAt])
+  @@map("referrals")
+}
+
+// ─── Task ─────────────────────────────────────────────────────────────────────
+// Actionable work items linked to contacts, referrals, care plans, and gaps
+model Task {
+  id              String    @id @default(uuid())
+  title           String
+  description     String?   @db.Text
+  type            String    @default("follow_up") // call, email, follow_up, assessment, authorization, scheduling, care_plan_review, other
+  status          String    @default("pending") // pending, in_progress, completed, cancelled
+  priority        String    @default("normal") // low, normal, high, critical
+  contactId       String?
+  referralId      String?
+  carePlanId      String?
+  careGapId       String?
+  assignedTo      String // userId
+  dueDate         DateTime?
+  completedAt     DateTime?
+  completionNotes String?   @db.Text
+  createdBy       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  contact  Contact?  @relation(fields: [contactId], references: [id])
+  referral Referral? @relation(fields: [referralId], references: [id])
+  carePlan CarePlan? @relation(fields: [carePlanId], references: [id])
+  careGap  CareGap?  @relation(fields: [careGapId], references: [id])
+
+  @@index([assignedTo, status])
+  @@index([contactId, status])
+  @@index([dueDate, status])
+  @@map("tasks")
+}
+
+// ─── CareGap ──────────────────────────────────────────────────────────────────
+// Identified gaps in preventive or chronic care
+model CareGap {
+  id            String    @id @default(uuid())
+  contactId     String
+  gapType       String // mammogram, colorectal_screening, hba1c, flu_vaccine, bp_check, medication_refill, behavioural_health_assessment, post_discharge_followup, other
+  description   String
+  status        String    @default("open") // open, in_progress, closed, declined
+  priority      String    @default("medium") // low, medium, high, critical
+  identifiedAt  DateTime  @default(now())
+  identifiedBy  String
+  targetDate    DateTime?
+  closedAt      DateTime?
+  closedBy      String?
+  declineReason String?
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([contactId, status])
+  @@index([gapType, status])
+  @@map("care_gaps")
+}
+
+// ─── Campaign ─────────────────────────────────────────────────────────────────
+// Outreach campaigns (email, SMS, phone, multi-channel)
+model Campaign {
+  id             String    @id @default(uuid())
+  name           String
+  description    String?   @db.Text
+  type           String    @default("email") // email, sms, phone, multi_channel
+  status         String    @default("draft") // draft, scheduled, active, paused, completed, cancelled
+  targetSegment  Json? // JSON criteria: { riskLevel, status, gapType, accountId, ageRange, sdohFlags }
+  subject        String?
+  content        String?   @db.Text
+  scheduledAt    DateTime?
+  launchedAt     DateTime?
+  completedAt    DateTime?
+  sentCount      Int       @default(0)
+  deliveredCount Int       @default(0)
+  openedCount    Int       @default(0)
+  respondedCount Int       @default(0)
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  members CampaignMember[]
+
+  @@index([status])
+  @@map("campaigns")
+}
+
+model CampaignMember {
+  id            String    @id @default(uuid())
+  campaignId    String
+  contactId     String
+  status        String    @default("pending") // pending, sent, delivered, opened, clicked, responded, opted_out, failed
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  openedAt      DateTime?
+  respondedAt   DateTime?
+  failureReason String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact  Contact  @relation(fields: [contactId], references: [id])
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId, status])
+  @@map("campaign_members")
+}
+
+// ─── Communication ────────────────────────────────────────────────────────────
+// Unified activity log: emails, SMS, calls, notes, system events
+model Communication {
+  id         String   @id @default(uuid())
+  contactId  String
+  type       String // email, sms, phone_call, note, portal_message, system_event
+  direction  String   @default("outbound") // inbound, outbound
+  subject    String?
+  content    String?  @db.Text
+  status     String   @default("sent") // sent, delivered, read, failed, received
+  sentBy     String? // userId (null for system events)
+  sentAt     DateTime @default(now())
+  referralId String?
+  taskId     String?
+  campaignId String?
+  createdAt  DateTime @default(now())
+
+  contact  Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  referral Referral? @relation(fields: [referralId], references: [id])
+
+  @@index([contactId, createdAt])
+  @@index([type, direction])
+  @@map("communications")
+}
+
+// ─── AuditLog ─────────────────────────────────────────────────────────────────
+// Immutable audit trail for all PHI access and mutations
+model AuditLog {
+  id            String   @id @default(uuid())
+  contactId     String?
+  userId        String
+  action        String // CREATE, READ, UPDATE, DELETE
+  resourceType  String
+  resourceId    String?
+  changes       Json?
+  ipAddress     String?
+  correlationId String?
+  createdAt     DateTime @default(now())
+
+  contact Contact? @relation(fields: [contactId], references: [id])
+
+  @@index([contactId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
