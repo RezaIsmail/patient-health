@@ -32,7 +32,7 @@ RUN cd services/auth-service && npm run build
 
 # Copy Prisma generated client into dist so it ships as part of the compiled output.
 # dist/lib/prisma.js resolves require('../generated/prisma') → dist/generated/prisma
-RUN cp -r /app/services/auth-service/src/generated/prisma /app/services/auth-service/dist/generated/prisma
+RUN mkdir -p /app/services/auth-service/dist/generated && cp -r /app/services/auth-service/src/generated/prisma /app/services/auth-service/dist/generated/prisma
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
