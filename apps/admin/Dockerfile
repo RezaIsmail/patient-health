@@ -29,7 +29,8 @@ COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf.template
 # Defaults for local Docker Compose; Railway overrides these via env vars
 ENV AUTH_SERVICE_URL=http://auth-service:3001
 ENV BACKEND_SERVICE_URL=http://admin-service:3004
+ENV PORT=80
 
 EXPOSE 80
 
-CMD ["/bin/sh", "-c", "envsubst '$AUTH_SERVICE_URL $BACKEND_SERVICE_URL' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "envsubst '$AUTH_SERVICE_URL $BACKEND_SERVICE_URL $PORT' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
