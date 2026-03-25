@@ -7,6 +7,9 @@ on:
       - 'apps/crm/**'
       - 'services/crm-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-crm.yml'
   pull_request:
     branches: [main, develop]
@@ -14,6 +17,9 @@ on:
       - 'apps/crm/**'
       - 'services/crm-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-crm.yml'
 
 concurrency:

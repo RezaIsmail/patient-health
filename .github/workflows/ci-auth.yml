@@ -6,12 +6,18 @@ on:
     paths:
       - 'services/auth-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-auth.yml'
   pull_request:
     branches: [main, develop]
     paths:
       - 'services/auth-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-auth.yml'
 
 concurrency:

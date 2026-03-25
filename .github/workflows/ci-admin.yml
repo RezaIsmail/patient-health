@@ -7,6 +7,9 @@ on:
       - 'apps/admin/**'
       - 'services/admin-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-admin.yml'
   pull_request:
     branches: [main, develop]
@@ -14,6 +17,9 @@ on:
       - 'apps/admin/**'
       - 'services/admin-service/**'
       - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
       - '.github/workflows/ci-admin.yml'
 
 concurrency:
