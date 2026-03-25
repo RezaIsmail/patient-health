@@ -23,6 +23,9 @@ RUN cd apps/admin && npm run build
 # ── Stage 2: nginx ────────────────────────────────────────────────────────────
 FROM nginx:alpine AS runtime
 
+# Required for nginx to proxy to HTTPS upstream services (Railway)
+RUN apk add --no-cache ca-certificates
+
 COPY --from=builder /app/apps/admin/dist /usr/share/nginx/html
 COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf.template
 
