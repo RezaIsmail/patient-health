@@ -48,17 +48,17 @@ jobs:
         run: npx turbo run build --filter=@patient-health/types
 
       - name: Lint — auth-service
-        run: npx turbo run lint --filter=auth-service
+        run: npx turbo run lint --filter=@patient-health/auth-service
 
       - name: Type-check — auth-service
         working-directory: services/auth-service
         run: npx tsc --noEmit
 
       - name: Test — auth-service
-        run: npx turbo run test --filter=auth-service
+        run: npx turbo run test --filter=@patient-health/auth-service
 
       - name: Build — auth-service
-        run: npx turbo run build --filter=auth-service
+        run: npx turbo run build --filter=@patient-health/auth-service
 
   # ── Deploy to staging ─────────────────────────────────────────────────────
   # Auth service is shared across all products — deploy carefully
