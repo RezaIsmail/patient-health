@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from '../lib/prisma'
 import { crmClient } from '../lib/internalClient'
+import { publishClinicalSynced } from '../lib/eventPublisher'
 import type { ApiError } from '@patient-health/types'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -87,6 +88,13 @@ function fireCrmClinicalSync(patientId: string, triggerType: string, correlation
       ])
       // Simplified risk heuristic based on active condition count
       const riskLevel = conditions.length >= 3 ? 'high' : conditions.length >= 1 ? 'medium' : 'low'
+
+      // Publish Redis event so CRM SSE clients receive live updates
+      publishClinicalSynced(
+        { patientId, triggerType, riskLevel, activeConditionCount: conditions.length },
+        correlationId
+      )
+
       await crmClient.clinicalSync({
         emrPatientId: patientId,
         riskLevel,

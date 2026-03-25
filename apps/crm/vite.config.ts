@@ -11,6 +11,15 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace('/api/auth', ''),
       },
+      '/api/events': {
+        target: 'http://localhost:3003',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Accept-Encoding', 'identity')
+          })
+        },
+      },
       '/api': {
         target: 'http://localhost:3003',
         changeOrigin: true,

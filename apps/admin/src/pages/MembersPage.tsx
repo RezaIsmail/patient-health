@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Users, Plus, Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { Skeleton } from '@patient-health/ui'
+import { trackEvent } from '@patient-health/analytics'
 import { format } from 'date-fns'
 
 interface Member {
@@ -122,6 +123,7 @@ export default function MembersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-members'] })
       setShowModal(false)
+      trackEvent({ event: 'admin_member_created' })
       setForm(INITIAL_FORM)
       setFormError('')
     },

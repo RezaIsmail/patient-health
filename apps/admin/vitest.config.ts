@@ -14,6 +14,8 @@ export default defineConfig({
     alias: {
       '@patient-health/types': path.resolve(__dirname, '../../packages/types/src/api.ts'),
       '@patient-health/ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),
+      '@patient-health/events': path.resolve(__dirname, '../../packages/events/src/index.ts'),
+      '@patient-health/analytics': path.resolve(__dirname, '../../packages/analytics/src/index.ts'),
     },
   },
   define: {

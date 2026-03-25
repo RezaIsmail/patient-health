@@ -9,6 +9,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@patient-health/events": "*",
     "@patient-health/types": "*",
     "@patient-health/ui": "*",
     "@tanstack/react-query": "^5.50.0",

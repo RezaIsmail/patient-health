@@ -5,7 +5,10 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { registerAuthStateGetter } from './lib/api'
 import { useAuthStore } from './stores/authStore'
+import { initAnalytics } from '@patient-health/analytics'
 import './index.css'
+
+initAnalytics(import.meta.env.VITE_GA4_MEASUREMENT_ID)
 
 registerAuthStateGetter(() => {
   const state = useAuthStore.getState()

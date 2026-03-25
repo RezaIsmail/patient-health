@@ -9,6 +9,10 @@ import type {
   CreatePatientDto,
   ApiError,
 } from '@patient-health/types'
+import {
+  publishPatientCreated,
+  publishPatientUpdated,
+} from '../lib/eventPublisher'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -309,6 +313,11 @@ export async function patientRoutes(fastify: FastifyInstance) {
       correlationId,
     })
 
+    publishPatientCreated(
+      { patientId: patient.id, mrn: patient.mrn, firstName: patient.firstName, lastName: patient.lastName },
+      correlationId
+    )
+
     return reply.status(201).send({ data: toPatientSummary(patient) })
   })
 
@@ -420,6 +429,11 @@ export async function patientRoutes(fastify: FastifyInstance) {
         ipAddress: request.ip,
         correlationId,
       })
+
+      publishPatientUpdated(
+        { patientId: updated.id, mrn: updated.mrn, changes: dto as Record<string, unknown> },
+        correlationId
+      )
 
       return reply.status(200).send({ data: toPatientSummary(updated) })
     }

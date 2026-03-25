@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, TrendingUp, Filter } from 'lucide-react'
 import { api } from '../lib/api'
 import { Skeleton } from '@patient-health/ui'
+import { trackEvent } from '@patient-health/analytics'
 import { format, differenceInDays } from 'date-fns'
 
 interface CareGap {
@@ -58,6 +59,7 @@ export default function CareGapsPage() {
   const [gapTypeFilter, setGapTypeFilter] = useState('')
   const [closingId, setClosingId] = useState<string | null>(null)
   const [closingNote, setClosingNote] = useState('')
+  const closingGapRef = useRef<{ contactId: string; gapType: string } | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['care-gaps-population', statusFilter, priorityFilter, gapTypeFilter],
@@ -79,6 +81,10 @@ export default function CareGapsPage() {
     mutationFn: ({ id, note }: { id: string; note: string }) =>
       api.patch(`/api/care-gaps/${id}`, { status: 'closed', closureNote: note }),
     onSuccess: () => {
+      if (closingGapRef.current) {
+        trackEvent({ event: 'crm_care_gap_closed', contact_id: closingGapRef.current.contactId, gap_type: closingGapRef.current.gapType })
+        closingGapRef.current = null
+      }
       qc.invalidateQueries({ queryKey: ['care-gaps-population'] })
       setClosingId(null)
       setClosingNote('')
@@ -297,7 +303,7 @@ export default function CareGapsPage() {
 
                       {statusFilter === 'open' || statusFilter === 'in_progress' ? (
                         <button
-                          onClick={() => setClosingId(gap.id)}
+                          onClick={() => { closingGapRef.current = { contactId: gap.contact.id, gapType: gap.gapType }; setClosingId(gap.id) }}
                           className="flex-shrink-0 flex items-center gap-1 rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 transition-colors"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" />

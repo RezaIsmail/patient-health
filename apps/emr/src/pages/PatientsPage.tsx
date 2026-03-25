@@ -7,6 +7,7 @@ import { usePatients } from '../hooks/usePatients'
 import { format } from 'date-fns'
 import type { PatientSummary } from '@patient-health/types'
 import NewPatientModal from '../components/NewPatientModal'
+import { trackEvent } from '@patient-health/analytics'
 
 // ─── Debounce hook ────────────────────────────────────────────────────────────
 
@@ -320,6 +321,7 @@ export default function PatientsPage() {
         onSuccess={(patient) => {
           queryClient.invalidateQueries({ queryKey: ['patients'] })
           setToast(`Patient registered — ${patient.mrn}`)
+          trackEvent({ event: 'emr_patient_registered' })
         }}
       />
 

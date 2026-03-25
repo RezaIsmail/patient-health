@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { format } from 'date-fns'
 import { prisma } from '../lib/prisma'
 import { emrClient, crmClient } from '../lib/internalClient'
+import { publishMemberCreated } from '../lib/eventPublisher'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -206,6 +207,12 @@ export async function memberRoutes(fastify: FastifyInstance) {
       correlationId: cid,
       ipAddress: request.ip,
     })
+
+    // Publish domain event — fire-and-forget, never block member creation
+    publishMemberCreated(
+      { memberId: member.id, memberNumber: member.memberNumber, firstName: member.firstName, lastName: member.lastName },
+      cid,
+    )
 
     // Fan out to EMR + CRM in parallel — fire-and-forget, never block member creation
     Promise.allSettled([

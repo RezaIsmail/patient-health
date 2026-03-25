@@ -5,6 +5,8 @@ import rateLimit from '@fastify/rate-limit'
 import jwt from '@fastify/jwt'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from './lib/prisma'
+import { connectRedis, disconnectRedis } from './lib/redis'
+import { initEventSubscriber } from './lib/eventSubscriber'
 import { contactRoutes } from './routes/contacts'
 import { accountRoutes } from './routes/accounts'
 import { carePlanRoutes } from './routes/care-plans'
@@ -19,6 +21,7 @@ import { emrIntegrationRoutes } from './routes/emr-integration'
 import { fhirRoutes } from './routes/fhir'
 import { crmInternalRoutes } from './routes/internal'
 import { webhookRoutes } from './routes/webhooks'
+import { crmEventRoutes } from './routes/events'
 
 const PORT = parseInt(process.env.PORT ?? process.env.CRM_PORT ?? '3003', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
@@ -126,6 +129,7 @@ async function bootstrap() {
   await fastify.register(fhirRoutes)
   await fastify.register(crmInternalRoutes)
   await fastify.register(webhookRoutes)
+  await fastify.register(crmEventRoutes)
 
   // ── Health endpoints ──────────────────────────────────────────────────────
   fastify.get('/health', async (_request, reply) => {
@@ -172,6 +176,25 @@ async function bootstrap() {
       correlationId,
     })
   })
+
+  // ── Redis + event subscriber ───────────────────────────────────────────────
+  try {
+    await connectRedis()
+    await initEventSubscriber()
+  } catch (err) {
+    fastify.log.warn({ err }, 'Redis unavailable — real-time features disabled')
+  }
+
+  // ── Graceful shutdown ─────────────────────────────────────────────────────
+  const shutdown = async (signal: string) => {
+    fastify.log.info({ signal }, 'Shutting down')
+    await fastify.close()
+    await disconnectRedis()
+    await prisma.$disconnect()
+    process.exit(0)
+  }
+  process.once('SIGTERM', () => void shutdown('SIGTERM'))
+  process.once('SIGINT', () => void shutdown('SIGINT'))
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' })
   fastify.log.info({ port: PORT }, 'CRM service listening')

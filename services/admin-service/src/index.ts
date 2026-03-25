@@ -5,6 +5,8 @@ import rateLimit from '@fastify/rate-limit'
 import jwt from '@fastify/jwt'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from './lib/prisma'
+import { connectRedis, disconnectRedis } from './lib/redis'
+import { initEventSubscriber } from './lib/eventSubscriber'
 import { memberRoutes } from './routes/members'
 import { organisationRoutes } from './routes/organisations'
 import { programmeRoutes } from './routes/programmes'
@@ -16,6 +18,7 @@ import { consentRoutes } from './routes/consent'
 import { referenceDataRoutes } from './routes/reference-data'
 import { templateRoutes } from './routes/templates'
 import { auditAlertRulesRoutes } from './routes/audit-alert-rules'
+import { adminEventRoutes } from './routes/events'
 
 const PORT = parseInt(process.env.PORT ?? process.env.ADMIN_PORT ?? '3004', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
@@ -120,6 +123,7 @@ async function bootstrap() {
   await fastify.register(referenceDataRoutes)
   await fastify.register(templateRoutes)
   await fastify.register(auditAlertRulesRoutes)
+  await fastify.register(adminEventRoutes)
 
   // ── Health endpoints ──────────────────────────────────────────────────────
   fastify.get('/health', async (_request, reply) => {
@@ -166,6 +170,25 @@ async function bootstrap() {
       correlationId,
     })
   })
+
+  // ── Redis + event subscriber ───────────────────────────────────────────────
+  try {
+    await connectRedis()
+    await initEventSubscriber()
+  } catch (err) {
+    fastify.log.warn({ err }, 'Redis unavailable — real-time features disabled')
+  }
+
+  // ── Graceful shutdown ─────────────────────────────────────────────────────
+  const shutdown = async (signal: string) => {
+    fastify.log.info({ signal }, 'Shutting down')
+    await fastify.close()
+    await disconnectRedis()
+    await prisma.$disconnect()
+    process.exit(0)
+  }
+  process.once('SIGTERM', () => void shutdown('SIGTERM'))
+  process.once('SIGINT', () => void shutdown('SIGINT'))
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' })
   fastify.log.info({ port: PORT }, 'Admin service listening')

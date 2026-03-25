@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { prisma } from '../lib/prisma'
 import { Prisma } from '@prisma/client'
 import { dispatchWebhookEvent } from './webhooks'
+import { publishContactRiskChanged, publishCareGapOpened } from '../lib/eventPublisher'
 
 // ─── Care gap rule engine ──────────────────────────────────────────────────────
 // Maps ICD-10 condition codes to care gaps that should be opened automatically.
@@ -180,6 +181,8 @@ export async function crmInternalRoutes(fastify: FastifyInstance) {
     // not already open for this contact.
     const triggeredRules = identifyGapsFromConditions(d.activeConditions)
     const newGaps: string[] = []
+    interface NewGapRecord { id: string; gapType: string; description: string }
+    const newGapRecords: NewGapRecord[] = []
 
     for (const rule of triggeredRules) {
       const exists = await prisma.careGap.findFirst({
@@ -190,7 +193,7 @@ export async function crmInternalRoutes(fastify: FastifyInstance) {
         },
       })
       if (!exists) {
-        await prisma.careGap.create({
+        const created = await prisma.careGap.create({
           data: {
             contactId: contact.id,
             gapType: rule.gapType,
@@ -201,6 +204,7 @@ export async function crmInternalRoutes(fastify: FastifyInstance) {
           },
         })
         newGaps.push(rule.gapType)
+        newGapRecords.push({ id: created.id, gapType: rule.gapType, description: rule.description })
       }
     }
 
@@ -222,7 +226,7 @@ export async function crmInternalRoutes(fastify: FastifyInstance) {
       },
     })
 
-    // Dispatch webhook events (fire-and-forget)
+    // Dispatch webhook events + Redis pub/sub (fire-and-forget)
     if (riskChanged) {
       dispatchWebhookEvent('contact.risk_level_changed', {
         contactId: contact.id,
@@ -230,13 +234,26 @@ export async function crmInternalRoutes(fastify: FastifyInstance) {
         previousRiskLevel: contact.riskLevel,
         newRiskLevel: d.riskLevel,
       }).catch(() => {})
+      publishContactRiskChanged(
+        {
+          contactId: contact.id,
+          emrPatientId: d.emrPatientId,
+          riskLevel: d.riskLevel,
+          previousRiskLevel: contact.riskLevel,
+        },
+        correlationId,
+      )
     }
-    for (const gap of newGaps) {
+    for (const gap of newGapRecords) {
       dispatchWebhookEvent('care_gap.opened', {
         contactId: contact.id,
-        gapType: gap,
+        gapType: gap.gapType,
         trigger: 'clinical_sync',
       }).catch(() => {})
+      publishCareGapOpened(
+        { careGapId: gap.id, contactId: contact.id, title: gap.description },
+        correlationId,
+      )
     }
 
     fastify.log.info({ correlationId, contactId: contact.id, emrPatientId: d.emrPatientId, triggerType: d.triggerType, newGaps }, 'Internal: clinical-sync complete')

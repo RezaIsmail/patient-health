@@ -1,0 +1,35 @@
+import Redis from 'ioredis'
+
+const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379'
+
+function createClient(role: 'pub' | 'sub'): Redis {
+  const client = new Redis(REDIS_URL, {
+    lazyConnect: true,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    retryStrategy: (times) => {
+      if (times > 20) return null // stop retrying — Redis may be unavailable
+      return Math.min(times * 100, 3000)
+    },
+  })
+
+  client.on('connect', () => console.info(`[redis:emr:${role}] connected`))
+  client.on('error', (err: Error) => console.error(`[redis:emr:${role}] error: ${err.message}`))
+
+  return client
+}
+
+/** Used for PUBLISH commands — must not be put into subscribe mode */
+export const redisPub = createClient('pub')
+
+/** Used for SUBSCRIBE — a dedicated connection (subscribe mode blocks the connection) */
+export const redisSub = createClient('sub')
+
+export async function connectRedis(): Promise<void> {
+  await Promise.all([redisPub.connect(), redisSub.connect()])
+}
+
+export async function disconnectRedis(): Promise<void> {
+  redisPub.disconnect()
+  redisSub.disconnect()
+}

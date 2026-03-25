@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from '../lib/prisma'
+import { publishCareGapOpened } from '../lib/eventPublisher'
 
 function getUserId(request: FastifyRequest): string {
   return (request as FastifyRequest & { userId: string }).userId ?? 'unknown'
@@ -116,6 +117,11 @@ export async function careGapRoutes(fastify: FastifyInstance) {
         },
       })
       .catch(() => null)
+
+    publishCareGapOpened(
+      { careGapId: gap.id, contactId: gap.contactId, title: gap.description },
+      correlationId,
+    )
 
     return reply.status(201).send({ data: gap })
   })

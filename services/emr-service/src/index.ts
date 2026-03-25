@@ -5,10 +5,12 @@ import rateLimit from '@fastify/rate-limit'
 import jwt from '@fastify/jwt'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from './lib/prisma'
+import { connectRedis, disconnectRedis } from './lib/redis'
 import { patientRoutes } from './routes/patients'
 import { clinicalRoutes } from './routes/clinical'
 import { encounterRoutes } from './routes/encounters'
 import { emrInternalRoutes } from './routes/internal'
+import { emrEventRoutes } from './routes/events'
 
 const PORT = parseInt(process.env.PORT ?? process.env.EMR_PORT ?? '3002', 10)
 const NODE_ENV = process.env.NODE_ENV ?? 'development'
@@ -107,6 +109,7 @@ async function bootstrap() {
   await fastify.register(clinicalRoutes)
   await fastify.register(encounterRoutes)
   await fastify.register(emrInternalRoutes)
+  await fastify.register(emrEventRoutes)
 
   // ── Health endpoints ──────────────────────────────────────────────────────
   fastify.get('/health', async (_request, reply) => {
@@ -153,6 +156,25 @@ async function bootstrap() {
       correlationId,
     })
   })
+
+  // ── Redis ──────────────────────────────────────────────────────────────────
+  try {
+    await connectRedis()
+  } catch (err) {
+    // Redis failure is non-fatal — SSE/pub-sub will be unavailable but REST API continues
+    fastify.log.warn({ err }, 'Redis unavailable — real-time features disabled')
+  }
+
+  // ── Graceful shutdown ─────────────────────────────────────────────────────
+  const shutdown = async (signal: string) => {
+    fastify.log.info({ signal }, 'Shutting down')
+    await fastify.close()
+    await disconnectRedis()
+    await prisma.$disconnect()
+    process.exit(0)
+  }
+  process.once('SIGTERM', () => void shutdown('SIGTERM'))
+  process.once('SIGINT', () => void shutdown('SIGINT'))
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' })
   fastify.log.info({ port: PORT }, 'EMR service listening')

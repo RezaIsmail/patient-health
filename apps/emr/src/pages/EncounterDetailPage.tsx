@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { Skeleton } from '@patient-health/ui'
+import { trackEvent } from '@patient-health/analytics'
 import { format } from 'date-fns'
 import type { EncounterDetailDto, PatientSummary } from '@patient-health/types'
 
@@ -130,6 +131,7 @@ export default function EncounterDetailPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['encounter', patientId, encounterId] })
       qc.invalidateQueries({ queryKey: ['patientChart', patientId] })
+      trackEvent({ event: 'emr_encounter_signed', patient_id: patientId ?? '', encounter_id: encounterId ?? '' })
     },
   })
 
