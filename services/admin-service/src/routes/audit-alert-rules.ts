@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
-import { Prisma } from '../generated/prisma'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 import { subMinutes } from 'date-fns'
 
