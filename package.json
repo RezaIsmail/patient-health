@@ -21,6 +21,7 @@
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0"
   },
+  "packageManager": "npm@10.8.2",
   "engines": {
     "node": ">=20.0.0"
   }
