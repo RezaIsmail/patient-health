@@ -40,13 +40,8 @@ COPY --from=builder /app/services/admin-service/dist ./dist
 # Prisma schema (used for migrations / seeding)
 COPY --from=builder /app/services/admin-service/prisma ./prisma
 
-# Prisma generated client with native engine binary.
-# Must live at ./dist/generated/prisma so that dist/lib/prisma.js can resolve
-# require('../generated/prisma') — i.e. /app/dist/lib/../generated/prisma.
-COPY --from=builder /app/services/admin-service/src/generated/prisma ./dist/generated/prisma
-
 COPY --from=builder /app/services/admin-service/package.json ./
 
 EXPOSE 3004
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node prisma/seed.js && node dist/index.js"]

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { Prisma } from '../generated/prisma'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 import { startOfDay, subDays, subMinutes } from 'date-fns'
 

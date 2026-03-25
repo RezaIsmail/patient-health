@@ -1,0 +1,370 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ADMIN_DATABASE_URL")
+}
+
+// ─── Organisation ─────────────────────────────────────────────────────────────
+model Organisation {
+  id           String   @id @default(uuid())
+  name         String
+  type         String   @default("clinic") // health_system, clinic, payer, employer, community_org
+  status       String   @default("active") // active, inactive
+  phone        String?
+  email        String?
+  website      String?
+  addressLine1 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String   @default("US")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sites      Site[]
+  members    Member[]
+  programmes Programme[]
+
+  @@index([name])
+  @@index([status])
+  @@map("organisations")
+}
+
+// ─── Site ─────────────────────────────────────────────────────────────────────
+model Site {
+  id             String   @id @default(uuid())
+  name           String
+  siteType       String   @default("clinic") // clinic, hospital, virtual, admin_only
+  organisationId String
+  addressLine1   String?
+  city           String?
+  state          String?
+  postalCode     String?
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  departments  Department[]
+  members      Member[]
+
+  @@index([organisationId])
+  @@map("sites")
+}
+
+// ─── Department ───────────────────────────────────────────────────────────────
+model Department {
+  id             String   @id @default(uuid())
+  name           String
+  departmentType String   @default("clinical") // clinical, administrative, operations, compliance
+  siteId         String
+  headUserId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  site  Site   @relation(fields: [siteId], references: [id])
+  teams Team[]
+
+  @@index([siteId])
+  @@map("departments")
+}
+
+// ─── Team ─────────────────────────────────────────────────────────────────────
+model Team {
+  id           String   @id @default(uuid())
+  name         String
+  teamType     String   @default("care")
+  departmentId String
+  leadUserId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@index([departmentId])
+  @@map("teams")
+}
+
+// ─── Member ───────────────────────────────────────────────────────────────────
+// Canonical platform identity — the neutral hub between EMR patient and CRM contact
+model Member {
+  id           String    @id @default(uuid())
+  memberNumber String    @unique // auto-generated: MEM-YYYYMMDD-NNNN
+  firstName    String
+  lastName     String
+  dateOfBirth  DateTime?
+  sex          String? // male, female, other, unknown
+  phone        String?
+  email        String?
+  status       String    @default("active") // pending_verification, active, suspended, inactive, deceased
+  riskLevel    String    @default("low") // low, medium, high, critical
+
+  // Identity links to other services
+  emrPatientId String? // FK to EMR service patient record
+  crmContactId String? // FK to CRM service contact record
+
+  // Org assignment
+  organisationId String
+  siteId         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organisation Organisation          @relation(fields: [organisationId], references: [id])
+  site         Site?                 @relation(fields: [siteId], references: [id])
+  enrollments  ProgrammeEnrollment[]
+  auditEvents  AuditEvent[]
+
+  @@index([lastName, firstName])
+  @@index([status, riskLevel])
+  @@index([organisationId])
+  @@index([emrPatientId])
+  @@index([crmContactId])
+  @@map("members")
+}
+
+// ─── Programme ────────────────────────────────────────────────────────────────
+model Programme {
+  id                  String   @id @default(uuid())
+  name                String
+  description         String?  @db.Text
+  programmeType       String   @default("chronic_disease") // chronic_disease, preventive, behavioural_health, post_discharge, complex_care, other
+  status              String   @default("draft") // draft, active, inactive
+  organisationId      String
+  eligibilityCriteria Json? // JSON rule tree
+  enrollmentCapacity  Int?
+  slaDefinitions      Json? // JSON SLA rules
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organisation Organisation          @relation(fields: [organisationId], references: [id])
+  enrollments  ProgrammeEnrollment[]
+
+  @@index([organisationId, status])
+  @@map("programmes")
+}
+
+// ─── ProgrammeEnrollment ──────────────────────────────────────────────────────
+model ProgrammeEnrollment {
+  id            String    @id @default(uuid())
+  memberId      String
+  programmeId   String
+  state         String    @default("referred") // referred, screened, eligible, consented, enrolled, active, graduated, disenrolled, transferred, declined
+  assignedTo    String? // userId of assigned coordinator
+  enrolledAt    DateTime?
+  graduatedAt   DateTime?
+  disenrolledAt DateTime?
+  reasonCode    String?
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  member      Member                 @relation(fields: [memberId], references: [id])
+  programme   Programme              @relation(fields: [programmeId], references: [id])
+  transitions EnrollmentTransition[]
+  consents    Consent[]
+
+  @@unique([memberId, programmeId])
+  @@index([memberId])
+  @@index([programmeId, state])
+  @@map("programme_enrollments")
+}
+
+// ─── EnrollmentTransition ─────────────────────────────────────────────────────
+model EnrollmentTransition {
+  id           String   @id @default(uuid())
+  enrollmentId String
+  fromState    String
+  toState      String
+  actorId      String
+  actorRole    String?
+  reasonCode   String?
+  notes        String?  @db.Text
+  timestamp    DateTime @default(now())
+
+  enrollment ProgrammeEnrollment @relation(fields: [enrollmentId], references: [id])
+
+  @@index([enrollmentId])
+  @@map("enrollment_transitions")
+}
+
+// ─── Consent ──────────────────────────────────────────────────────────────────
+model Consent {
+  id               String    @id @default(uuid())
+  memberId         String?
+  enrollmentId     String?
+  consentType      String    @default("verbal") // verbal, written, electronic, implied
+  channel          String? // phone, portal, in_person, mail
+  collectedBy      String // userId
+  collectedAt      DateTime  @default(now())
+  documentVersion  String?
+  status           String    @default("active") // active, withdrawn
+  withdrawnAt      DateTime?
+  withdrawnBy      String?
+  withdrawalReason String?
+  createdAt        DateTime  @default(now())
+
+  enrollment ProgrammeEnrollment? @relation(fields: [enrollmentId], references: [id])
+
+  @@index([memberId])
+  @@index([enrollmentId])
+  @@map("consents")
+}
+
+// ─── Role ─────────────────────────────────────────────────────────────────────
+model Role {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+  productScope   String   @default("platform") // emr, crm, admin, platform
+  isBuiltIn      Boolean  @default(false)
+  organisationId String?
+  permissions    Json     @default("[]") // array of {resource_type, action, scope}
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userRoles UserRole[]
+
+  @@index([productScope])
+  @@map("roles")
+}
+
+// ─── UserRole ─────────────────────────────────────────────────────────────────
+model UserRole {
+  id        String    @id @default(uuid())
+  userId    String
+  roleId    String
+  grantedBy String
+  grantedAt DateTime  @default(now())
+  expiresAt DateTime?
+  revokedAt DateTime?
+  revokedBy String?
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// ─── AuditEvent ───────────────────────────────────────────────────────────────
+// Centralised, immutable, cross-service audit log
+model AuditEvent {
+  id            String   @id @default(uuid())
+  eventId       String   @unique @default(uuid())
+  timestamp     DateTime @default(now())
+  service       String // emr, crm, admin, auth
+  entityType    String // member, contact, patient, referral, care_plan, etc.
+  entityId      String?
+  action        String // create, update, delete, view
+  actorId       String
+  actorRole     String?
+  correlationId String?
+  ipAddress     String?
+  fieldChanges  Json? // array of {field, oldValue, newValue}
+  reasonCode    String?
+  notes         String?  @db.Text
+  memberId      String? // denormalised for fast per-member audit queries
+
+  member Member? @relation(fields: [memberId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@index([memberId])
+  @@index([service])
+  @@map("audit_events")
+}
+
+// ─── Reference Data ───────────────────────────────────────────────────────────
+// Admin-managed lookup tables — version-controlled, propagated to all services
+
+model ReferenceTable {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+  isBuiltIn      Boolean  @default(false)
+  organisationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  entries ReferenceEntry[]
+
+  @@map("reference_tables")
+}
+
+model ReferenceEntry {
+  id            String    @id @default(uuid())
+  tableId       String
+  code          String
+  label         String
+  description   String?
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  table ReferenceTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@unique([tableId, code])
+  @@index([tableId])
+  @@map("reference_entries")
+}
+
+// ─── Templates ────────────────────────────────────────────────────────────────
+// Communication, care-plan, and document templates with approval workflow
+
+model Template {
+  id             String    @id @default(uuid())
+  name           String
+  description    String?
+  templateType   String // communication, care_plan, document
+  status         String    @default("draft") // draft, submitted, approved, active, archived
+  contentBody    String    @db.Text
+  variableTokens Json      @default("[]") // array of {token, description, required}
+  organisationId String?
+  programmeIds   Json      @default("[]") // array of programme IDs this template is assigned to
+  versionNumber  Int       @default(1)
+  createdBy      String
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([templateType])
+  @@index([status])
+  @@index([organisationId])
+  @@map("templates")
+}
+
+// ─── Audit Alert Rules ────────────────────────────────────────────────────────
+// Configurable threshold-based rules for real-time anomaly detection on audit events
+
+model AuditAlertRule {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  isActive      Boolean  @default(true)
+  // Filters — null = match any value
+  service       String? // emr, crm, admin, auth — null = any
+  entityType    String? // member, contact, patient, etc. — null = any
+  action        String? // create, update, delete, view — null = any
+  actorRole     String? // specific role — null = any
+  // Threshold: alert if event count exceeds threshold within windowMinutes
+  threshold     Int      @default(10)
+  windowMinutes Int      @default(60)
+  severity      String   @default("medium") // low, medium, high, critical
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("audit_alert_rules")
+}

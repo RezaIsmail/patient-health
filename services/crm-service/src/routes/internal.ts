@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from '../lib/prisma'
-import { Prisma } from '../generated/prisma'
+import { Prisma } from '@prisma/client'
 import { dispatchWebhookEvent } from './webhooks'
 
 // ─── Care gap rule engine ──────────────────────────────────────────────────────

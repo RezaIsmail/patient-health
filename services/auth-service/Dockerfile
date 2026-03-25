@@ -43,19 +43,14 @@ ENV NODE_ENV=production
 # Hoisted workspace deps (fastify, zod, prisma, etc. live here)
 COPY --from=builder /app/node_modules ./node_modules
 
-# Compiled service output
+# Compiled service output (includes dist/generated/prisma from the cp above)
 COPY --from=builder /app/services/auth-service/dist ./dist
 
 # Prisma schema (used for migrations / seeding)
 COPY --from=builder /app/services/auth-service/prisma ./prisma
 
-# Prisma generated client with native engine binary.
-# Must live at ./dist/generated/prisma so that dist/lib/prisma.js can resolve
-# require('../generated/prisma') — i.e. /app/dist/lib/../generated/prisma.
-COPY --from=builder /app/services/auth-service/src/generated/prisma ./dist/generated/prisma
-
 COPY --from=builder /app/services/auth-service/package.json ./
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node prisma/seed.js && node dist/index.js"]
