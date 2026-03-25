@@ -50,10 +50,10 @@ jobs:
         run: npx turbo run build --filter=@patient-health/types --filter=@patient-health/ui
 
       - name: Lint — admin-service
-        run: npx turbo run lint --filter=admin-service
+        run: npx turbo run lint --filter=@patient-health/admin-service
 
       - name: Lint — admin (frontend)
-        run: npx turbo run lint --filter=admin
+        run: npx turbo run lint --filter=@patient-health/admin
 
       - name: Type-check — admin-service
         working-directory: services/admin-service
@@ -64,16 +64,16 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Test — admin-service
-        run: npx turbo run test --filter=admin-service
+        run: npx turbo run test --filter=@patient-health/admin-service
 
       - name: Test — admin (frontend)
-        run: npx turbo run test --filter=admin
+        run: npx turbo run test --filter=@patient-health/admin
 
       - name: Build — admin-service
-        run: npx turbo run build --filter=admin-service
+        run: npx turbo run build --filter=@patient-health/admin-service
 
       - name: Build — admin (frontend)
-        run: npx turbo run build --filter=admin
+        run: npx turbo run build --filter=@patient-health/admin
 
   # ── Deploy to staging ─────────────────────────────────────────────────────
 
