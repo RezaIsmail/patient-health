@@ -53,4 +53,4 @@ COPY --from=builder /app/services/auth-service/package.json ./
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node prisma/seed.js && node dist/index.js"]
