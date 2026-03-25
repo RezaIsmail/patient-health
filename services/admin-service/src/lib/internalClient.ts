@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
-
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN ?? 'dev-internal-secret'
 const EMR_URL = process.env.EMR_SERVICE_URL ?? 'http://emr-service:3002'
 const CRM_URL = process.env.CRM_SERVICE_URL ?? 'http://crm-service:3003'
