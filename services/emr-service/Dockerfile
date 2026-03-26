@@ -11,10 +11,12 @@ COPY tsconfig.base.json ./
 
 COPY services/emr-service/package.json ./services/emr-service/
 COPY packages/types/package.json ./packages/types/
+COPY packages/events/package.json ./packages/events/
 
 RUN npm install --workspaces --include-workspace-root
 
 COPY packages/types/ ./packages/types/
+COPY packages/events/ ./packages/events/
 COPY services/emr-service/ ./services/emr-service/
 
 RUN cd packages/types && npm run build

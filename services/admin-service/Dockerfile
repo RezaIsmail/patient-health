@@ -11,10 +11,12 @@ COPY tsconfig.base.json ./
 
 COPY services/admin-service/package.json ./services/admin-service/
 COPY packages/types/package.json ./packages/types/
+COPY packages/events/package.json ./packages/events/
 
 RUN npm install --workspaces --include-workspace-root
 
 COPY packages/types/ ./packages/types/
+COPY packages/events/ ./packages/events/
 COPY services/admin-service/ ./services/admin-service/
 
 RUN cd packages/types && npm run build
