@@ -18,7 +18,7 @@ interface CareGap {
   dueDate?: string
   closedAt?: string
   closedBy?: string
-  contact?: { firstName: string; lastName: string; riskLevel: string }
+  contact?: { id: string; firstName: string; lastName: string; riskLevel: string }
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
@@ -303,7 +303,7 @@ export default function CareGapsPage() {
 
                       {statusFilter === 'open' || statusFilter === 'in_progress' ? (
                         <button
-                          onClick={() => { closingGapRef.current = { contactId: gap.contact.id, gapType: gap.gapType }; setClosingId(gap.id) }}
+                          onClick={() => { closingGapRef.current = { contactId: gap.contact?.id ?? gap.contactId, gapType: gap.gapType }; setClosingId(gap.id) }}
                           className="flex-shrink-0 flex items-center gap-1 rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 transition-colors"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" />
