@@ -20,6 +20,7 @@ COPY packages/events/ ./packages/events/
 COPY services/emr-service/ ./services/emr-service/
 
 RUN cd packages/types && npm run build
+RUN cd packages/events && npm run build
 RUN cd services/emr-service && npx prisma generate
 RUN cd services/emr-service && npm run build
 
@@ -35,6 +36,9 @@ ENV NODE_ENV=production
 
 # Hoisted workspace deps (fastify, zod, prisma, etc. live here)
 COPY --from=builder /app/node_modules ./node_modules
+
+# Workspace package — symlink target must exist so Node.js can resolve it
+COPY --from=builder /app/packages/events ./packages/events
 
 # Compiled service output
 COPY --from=builder /app/services/emr-service/dist ./dist

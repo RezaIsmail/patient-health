@@ -22,6 +22,7 @@ COPY packages/analytics/ ./packages/analytics/
 COPY apps/crm/ ./apps/crm/
 
 RUN cd packages/types && npm run build
+RUN cd packages/events && npm run build
 RUN cd apps/crm && npm run build
 
 # ── Stage 2: nginx ────────────────────────────────────────────────────────────
