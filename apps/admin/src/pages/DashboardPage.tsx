@@ -12,6 +12,7 @@ import {
 import { api } from '../lib/api'
 import { useAuthStore } from '../stores/authStore'
 import { Skeleton } from '@patient-health/ui'
+import TodayDate from '../components/TodayDate'
 
 interface DashboardData {
   members: {
@@ -136,9 +137,12 @@ export default function DashboardPage() {
             Good morning{user ? `, ${user.firstName}` : ''} — platform operations overview
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Clock className="h-3 w-3" />
-          <span>Auto-refreshes every minute</span>
+        <div className="flex items-center gap-3">
+          <TodayDate />
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <Clock className="h-3 w-3" />
+            <span>Auto-refreshes every minute</span>
+          </div>
         </div>
       </div>
 
